@@ -4,15 +4,15 @@
 
 <div class="row">
   <% if (!links || links.length === 0) { %>
-    <p class="text-center">No approved links yet. Check back soon!</p>
+    <p class="text-center text-muted">No approved links yet.</p>
   <% } else { %>
     <% links.forEach(link => { %>
       <div class="col-md-3 mb-4">
-        <div class="card h-100 shadow-sm">
+        <div class="card bg-dark text-light h-100 shadow-sm">
           <img src="<%= link.thumbnail || '/images/default.jpg' %>" class="card-img-top" alt="Thumbnail">
           <div class="card-body">
             <h5 class="card-title">
-              <a href="<%= link.link_url %>" target="_blank" class="text-decoration-none">
+              <a href="<%= link.link_url %>" target="_blank" class="text-decoration-none text-info">
                 <%= link.title %>
               </a>
             </h5>

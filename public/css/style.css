@@ -1,0 +1,161 @@
+/* --------------------------------------------------
+   LinkVerse — Dark Modern Theme
+   -------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+/* GLOBAL */
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: radial-gradient(circle at top, #1a1a1a, #0d0d0d);
+  color: #fff;
+}
+
+/* --------------------------------------------------
+   AUTH PAGES (Login / Register)
+   -------------------------------------------------- */
+/* Center auth card perfectly across viewport */
+.auth-page main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.auth-card {
+  background: rgba(30, 30, 30, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+  padding: 2rem;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+
+.auth-card h3 {
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+}
+
+.auth-card input {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  margin-bottom: 1rem;
+  transition: background 0.2s ease;
+}
+
+.auth-card input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-card input:focus {
+  background: rgba(255, 255, 255, 0.2);
+  outline: 2px solid #6c63ff;
+}
+
+.auth-card .btn {
+  width: 100%;
+  background: linear-gradient(135deg, #6c63ff, #8364f7);
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.auth-card .btn:hover {
+  background: linear-gradient(135deg, #8364f7, #6c63ff);
+  transform: translateY(-2px);
+}
+
+.auth-card a {
+  color: #6c63ff;
+  text-decoration: none;
+}
+
+.auth-card a:hover {
+  text-decoration: underline;
+}
+
+.alert {
+  background: rgba(255, 0, 0, 0.15);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ff9d9d;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+}
+
+/* Optional: smooth fade-in animation for auth card */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------
+   HOMEPAGE CARDS
+   -------------------------------------------------- */
+.card {
+  border: none;
+  background-color: #1e1e1e;
+  color: #fff;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.card .card-footer {
+  background: #111;
+  border-top: none;
+}
+
+/* --------------------------------------------------
+   NAVBAR & FOOTER
+   -------------------------------------------------- */
+.navbar {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.navbar-brand {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+footer {
+  background: #111;
+  color: #aaa;
+}
+
+footer small {
+  color: #888;
+}
+
+/* --------------------------------------------------
+   RESPONSIVE TWEAKS
+   -------------------------------------------------- */
+@media (max-width: 600px) {
+  .auth-card {
+    padding: 1.5rem;
+    max-width: 90%;
+  }
+}
