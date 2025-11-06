@@ -6,14 +6,23 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { pool, dbHealthCheck } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import adminRoutes from "./routes/admin.js";
 
 dotenv.config();
 
-const app = express();
+// Setup __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- middlewares
+const app = express();
+
+// ----- View engine & static first (clarity)
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ----- Core middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(
@@ -24,46 +33,43 @@ app.use(
     cookie: { httpOnly: true, sameSite: "lax", maxAge: 86400000 },
   })
 );
+
+// Expose session to all EJS templates (your header expects `session`)
 app.use((req, res, next) => {
-  res.locals.currentUser = req.session.user || null;
+  res.locals.session = req.session;
   next();
 });
-app.use(express.static(path.join(__dirname, "public")));
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
 
-// --- homepage
-app.get("/", async (req, res) => {
+// ----- Routes
+app.use("/", authRoutes);
+app.use("/", adminRoutes);
+
+// Health check
+app.get("/health", async (req, res) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT l.*, COALESCE(AVG(r.rating),0) AS avg_rating
-      FROM links l
-      LEFT JOIN ratings r ON l.id = r.link_id
-      WHERE l.status='approved'
-      GROUP BY l.id
-      ORDER BY l.created_at DESC
-    `);
-    res.render("index", { title: "Home — LinkVerse", links: rows });
+    await dbHealthCheck();
+    res.json({ ok: true });
   } catch (err) {
-    console.error(err);
-    res.status(500).send("DB Error");
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-// --- health & auth routes
-app.get("/health", async (req, res) => {
-  try { await dbHealthCheck(); res.json({ ok: true }); }
-  catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+// Default route (temporary)
+app.get("/", (req, res) => {
+  res.send("<h2 style='color:white;background:#111;padding:20px;text-align:center'>Welcome to LinkVerse Backend (Server is running)</h2>");
 });
-app.use("/", authRoutes);
 
-// --- 404
+// 404
 app.use((req, res) => res.status(404).send("404 - Not Found"));
 
-// --- start
+// ----- Start
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
-  try { await dbHealthCheck(); console.log("✅ DB connected"); }
-  catch (e) { console.error("⚠️ DB failed:", e.message); }
-  console.log(`🚀 http://localhost:${PORT}`);
+  try {
+    await dbHealthCheck();
+    console.log("✅ Database connected successfully");
+  } catch (err) {
+    console.error("❌ Database connection failed:", err.message);
+  }
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

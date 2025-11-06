@@ -1,89 +1,107 @@
-/* --------------------------------------------------
-   LinkVerse — Dark Modern Theme
-   -------------------------------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;500;600&display=swap');
 
-/* GLOBAL */
-body {
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-  background: radial-gradient(circle at top, #1a1a1a, #0d0d0d);
-  color: #fff;
+:root {
+  --netflix-red: #e50914;
+  --netflix-dark: #141414;
+  --netflix-gray: #2f2f2f;
+  --text-light: #fff;
+  --text-muted: #b3b3b3;
 }
 
-/* --------------------------------------------------
-   AUTH PAGES (Login / Register)
-   -------------------------------------------------- */
-/* Center auth card perfectly across viewport */
-.auth-page main {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+body {
+  margin: 0;
   padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(180deg, #0d0d0d 0%, #141414 100%);
+  color: var(--text-light);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  background: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: blur(5px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.navbar-brand {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  color: var(--netflix-red) !important;
+  letter-spacing: 1px;
+}
+.nav-link {
+  color: var(--text-muted) !important;
+  transition: 0.3s;
+}
+.nav-link:hover {
+  color: var(--text-light) !important;
+}
+
+/* ===== AUTH PAGES ===== */
+.auth-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at top, #1a1a1a, #000);
 }
 
 .auth-card {
-  background: rgba(30, 30, 30, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
-  padding: 2rem;
+  background: rgba(20, 20, 20, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+  padding: 2rem 2.5rem;
   width: 100%;
   max-width: 420px;
   text-align: center;
 }
 
-
 .auth-card h3 {
-  font-weight: 600;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 1px;
+  font-size: 2rem;
+  color: var(--netflix-red);
   margin-bottom: 1.5rem;
-  color: #ffffff;
 }
 
 .auth-card input {
-  background: rgba(255, 255, 255, 0.1);
+  background: #2a2a2a;
   border: none;
   color: #fff;
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 6px;
+  padding: 12px 14px;
   width: 100%;
   margin-bottom: 1rem;
-  transition: background 0.2s ease;
 }
-
-.auth-card input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
-}
-
 .auth-card input:focus {
-  background: rgba(255, 255, 255, 0.2);
-  outline: 2px solid #6c63ff;
+  outline: 2px solid var(--netflix-red);
+  background: #1f1f1f;
 }
 
 .auth-card .btn {
   width: 100%;
-  background: linear-gradient(135deg, #6c63ff, #8364f7);
+  background: var(--netflix-red);
   border: none;
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 6px;
+  padding: 12px;
   font-weight: 600;
   color: #fff;
   cursor: pointer;
   transition: 0.3s;
+  font-size: 1rem;
 }
-
 .auth-card .btn:hover {
-  background: linear-gradient(135deg, #8364f7, #6c63ff);
+  background: #f40612;
   transform: translateY(-2px);
 }
 
 .auth-card a {
-  color: #6c63ff;
+  color: var(--netflix-red);
   text-decoration: none;
 }
-
 .auth-card a:hover {
   text-decoration: underline;
 }
@@ -92,70 +110,17 @@ body {
   background: rgba(255, 0, 0, 0.15);
   border: 1px solid rgba(255, 0, 0, 0.3);
   color: #ff9d9d;
-  border-radius: 8px;
+  border-radius: 6px;
   margin-bottom: 1rem;
   padding: 0.5rem;
 }
 
-/* Optional: smooth fade-in animation for auth card */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* --------------------------------------------------
-   HOMEPAGE CARDS
-   -------------------------------------------------- */
-.card {
-  border: none;
-  background-color: #1e1e1e;
-  color: #fff;
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-}
-
-.card .card-footer {
-  background: #111;
-  border-top: none;
-}
-
-/* --------------------------------------------------
-   NAVBAR & FOOTER
-   -------------------------------------------------- */
-.navbar {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-}
-
-.navbar-brand {
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
+/* ===== FOOTER ===== */
 footer {
-  background: #111;
-  color: #aaa;
-}
-
-footer small {
-  color: #888;
-}
-
-/* --------------------------------------------------
-   RESPONSIVE TWEAKS
-   -------------------------------------------------- */
-@media (max-width: 600px) {
-  .auth-card {
-    padding: 1.5rem;
-    max-width: 90%;
-  }
+  background: #000;
+  color: #666;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }

@@ -1,0 +1,17 @@
+<%- include('../partials/header', { title: "Admin Login", session: session }) %>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <h3>Admin Login</h3>
+
+    <% if (message) { %><div class="alert"><%= message %></div><% } %>
+
+    <form method="POST" action="/admin/login">
+      <input type="email" name="email" placeholder="Admin Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button class="btn">Login</button>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

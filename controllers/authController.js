@@ -1,82 +1,85 @@
-// controllers/authController.js
 import bcrypt from "bcrypt";
 import { pool } from "../config/db.js";
 
-// -------------------- REGISTER -------------------- //
-export const showRegister = (req, res) => {
-  res.render("register", { title: "Register — LinkVerse", message: null });
-};
-
+// ---------- USER REGISTER ----------
 export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
-
-  if (!username || !email || !password) {
-    return res.render("register", { message: "All fields are required." });
-  }
-
   try {
     const [existing] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
-    if (existing.length > 0) {
-      return res.render("register", { message: "Email already registered." });
+    if (existing.length) {
+      return res.render("register", { title: "Register", message: "Email already exists!" });
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    await pool.query("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", [
-      username,
-      email,
-      hashed,
-    ]);
-
+    await pool.query(
+      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+      [username, email, hashed]
+    );
     res.redirect("/login");
-  } catch (error) {
-    console.error("Register error:", error);
-    res.render("register", { message: "Something went wrong. Try again." });
+  } catch (err) {
+    console.error("Register error:", err);
+    res.render("register", { title: "Register", message: "Something went wrong." });
   }
 };
 
-// -------------------- LOGIN -------------------- //
-export const showLogin = (req, res) => {
-  res.render("login", { title: "Login — LinkVerse", message: null });
-};
-
+// ---------- USER LOGIN ----------
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.render("login", { message: "All fields are required." });
-  }
-
   try {
     const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
-    if (rows.length === 0) {
-      return res.render("login", { message: "Invalid credentials." });
+    if (!rows.length) {
+      return res.render("login", { title: "Login", message: "User not found." });
     }
 
     const user = rows[0];
     const match = await bcrypt.compare(password, user.password);
-
     if (!match) {
-      return res.render("login", { message: "Invalid credentials." });
+      return res.render("login", { title: "Login", message: "Incorrect password." });
     }
 
-    // Save session
     req.session.user = {
       id: user.id,
       username: user.username,
       email: user.email,
-      role: user.role,
     };
-
-    res.redirect("/");
-  } catch (error) {
-    console.error("Login error:", error);
-    res.render("login", { message: "Something went wrong. Try again." });
+    res.redirect("/"); // later we’ll redirect to user home/dashboard
+  } catch (err) {
+    console.error("Login error:", err);
+    res.render("login", { title: "Login", message: "Login failed." });
   }
 };
 
-// -------------------- LOGOUT -------------------- //
-export const logoutUser = (req, res) => {
+// ---------- ADMIN LOGIN ----------
+export const loginAdmin = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const [rows] = await pool.query("SELECT * FROM admins WHERE email = ?", [email]);
+    if (!rows.length) {
+      return res.render("admin/login", { title: "Admin Login", message: "Admin not found." });
+    }
+
+    const admin = rows[0];
+    const match = await bcrypt.compare(password, admin.password);
+    if (!match) {
+      return res.render("admin/login", { title: "Admin Login", message: "Wrong password." });
+    }
+
+    req.session.admin = {
+      id: admin.id,
+      username: admin.username,
+      email: admin.email,
+    };
+    res.redirect("/admin/dashboard");
+  } catch (err) {
+    console.error("Admin login error:", err);
+    res.render("admin/login", { title: "Admin Login", message: "Login failed." });
+  }
+};
+
+// ---------- LOGOUT ----------
+export const logout = (req, res) => {
   req.session.destroy(() => {
+    res.clearCookie("connect.sid");
     res.redirect("/");
   });
 };

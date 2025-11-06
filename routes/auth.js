@@ -1,24 +1,32 @@
-// routes/auth.js
 import express from "express";
 import {
-  showRegister,
   registerUser,
-  showLogin,
   loginUser,
-  logoutUser,
+  loginAdmin,
+  logout,
 } from "../controllers/authController.js";
+import { redirectIfAuthenticated } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Register routes
-router.get("/register", showRegister);
+// USER ROUTES
+router.get("/register", redirectIfAuthenticated, (req, res) =>
+  res.render("register", { title: "Register", message: null })
+);
 router.post("/register", registerUser);
 
-// Login routes
-router.get("/login", showLogin);
+router.get("/login", redirectIfAuthenticated, (req, res) =>
+  res.render("login", { title: "Login", message: null })
+);
 router.post("/login", loginUser);
 
-// Logout route
-router.get("/logout", logoutUser);
+// ADMIN ROUTES
+router.get("/admin/login", (req, res) =>
+  res.render("admin/login", { title: "Admin Login", message: null })
+);
+router.post("/admin/login", loginAdmin);
+
+// LOGOUT (shared)
+router.get("/logout", logout);
 
 export default router;
