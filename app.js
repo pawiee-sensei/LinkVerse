@@ -56,8 +56,9 @@ app.get("/health", async (req, res) => {
 
 // Default route (temporary)
 app.get("/", (req, res) => {
-  res.send("<h2 style='color:white;background:#111;padding:20px;text-align:center'>Welcome to LinkVerse Backend (Server is running)</h2>");
+  res.render("home", { title: "Home", session: req.session });
 });
+
 
 // 404
 app.use((req, res) => res.status(404).send("404 - Not Found"));

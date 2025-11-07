@@ -1,0 +1,31 @@
+<%- include('partials/header', { title: "Home", session: session }) %>
+
+<section class="hero-section d-flex flex-column justify-content-center align-items-center text-center text-light">
+  <div class="hero-content">
+    <h1 class="display-4 fw-bold">Welcome to LinkVerse</h1>
+    <p class="lead text-secondary">Stream and explore stories — films, series, and more, shared by creators.</p>
+    <% if (!session.user) { %>
+      <a href="/register" class="btn btn-danger px-4 mt-3">Get Started</a>
+    <% } %>
+  </div>
+</section>
+
+<section class="container my-5">
+  <h3 class="mb-4 fw-semibold text-light">Featured Uploads</h3>
+  <div class="row g-4">
+    <!-- Demo Cards — we’ll replace with dynamic videos later -->
+    <% for(let i=1;i<=6;i++){ %>
+    <div class="col-md-4 col-lg-3">
+      <div class="card bg-dark text-light border-0 shadow-sm movie-card">
+        <img src="/images/demo<%= i %>.jpg" class="card-img-top rounded-top" alt="Demo Poster">
+        <div class="card-body">
+          <h5 class="card-title">Sample Movie <%= i %></h5>
+          <p class="card-text small text-muted">A glimpse into a cinematic world...</p>
+        </div>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
