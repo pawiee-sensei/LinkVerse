@@ -52,29 +52,51 @@ export const loginUser = async (req, res) => {
 // ---------- ADMIN LOGIN ----------
 export const loginAdmin = async (req, res) => {
   const { email, password } = req.body;
+
   try {
+    // Step 1: Look for admin by email
     const [rows] = await pool.query("SELECT * FROM admins WHERE email = ?", [email]);
-    if (!rows.length) {
-      return res.render("admin/login", { title: "Admin Login", message: "Admin not found." });
+
+    if (rows.length === 0) {
+      return res.render("admin/login", {
+        title: "Admin Login",
+        message: "Admin not found.",
+      });
     }
 
+    // Step 2: Get the first admin record
     const admin = rows[0];
-    const match = await bcrypt.compare(password, admin.password);
-    if (!match) {
-      return res.render("admin/login", { title: "Admin Login", message: "Wrong password." });
+    console.log("Admin found:", admin.email); // safe now ✅
+
+    // Step 3: Compare the hashed password
+    const isMatch = await bcrypt.compare(password, admin.password);
+    console.log("Password match?", isMatch);
+
+    if (!isMatch) {
+      return res.render("admin/login", {
+        title: "Admin Login",
+        message: "Wrong password.",
+      });
     }
 
+    // Step 4: Save session
     req.session.admin = {
       id: admin.id,
       username: admin.username,
       email: admin.email,
     };
+
+    console.log("✅ Admin logged in:", req.session.admin.username);
     res.redirect("/admin/dashboard");
   } catch (err) {
     console.error("Admin login error:", err);
-    res.render("admin/login", { title: "Admin Login", message: "Login failed." });
+    res.render("admin/login", {
+      title: "Admin Login",
+      message: "Login failed. Try again.",
+    });
   }
 };
+
 
 // ---------- LOGOUT ----------
 export const logout = (req, res) => {

@@ -159,3 +159,268 @@ footer {
 .dropdown-item.text-danger:hover {
   background-color: rgba(229,9,20,0.1);
 }
+
+/* ===== ADMIN DASHBOARD ===== */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.25);
+}
+
+/* ===== ADMIN NAVBAR ===== */
+.navbar .dropdown-menu {
+  transition: all 0.2s ease;
+}
+
+.navbar .dropdown-menu .dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar .nav-link.active,
+.navbar .nav-link:hover {
+  color: #ff4d4d !important;
+}
+
+
+/* ======================
+   ADMIN LOGIN STYLING
+========================= */
+.admin-login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #111 0%, #000 80%);
+  background-attachment: fixed;
+}
+
+.admin-login-card {
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  color: #fff;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 25px rgba(255, 0, 0, 0.08);
+  animation: fadeIn 0.6s ease-out;
+  transition: all 0.3s ease;
+}
+
+.admin-login-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 35px rgba(255, 0, 0, 0.12);
+}
+
+.admin-input {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: #ff3b3b;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 10px rgba(255, 59, 59, 0.3);
+}
+
+.admin-login-header i {
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Alert Box (consistent style) */
+.alert-danger {
+  background: rgba(255, 0, 0, 0.15);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ff9d9d;
+  border-radius: 8px;
+}
+
+/* ====================================
+   ADMIN DASHBOARD — Modern Dark Theme
+==================================== */
+.admin-dashboard {
+  padding-bottom: 3rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Cards (stats) */
+.dashboard-card {
+  background: #1b1b1b;
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-3px);
+  border-color: #ff4d4d;
+  box-shadow: 0 6px 20px rgba(255, 77, 77, 0.15);
+}
+
+.dashboard-card .icon {
+  font-size: 2.4rem;
+  color: #ff4d4d;
+  opacity: 0.85;
+}
+
+.dashboard-card .info {
+  text-align: right;
+}
+
+.dashboard-card .info h5 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #aaa;
+}
+
+.dashboard-card .info h2 {
+  margin: 0;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Table styling */
+.table {
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.table thead {
+  color: #aaa;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: transparent;
+}
+
+.table tbody tr {
+  background-color: #181818;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+  background-color: #202020;
+}
+
+.table td {
+  border: none;
+  padding: 1rem;
+  color: #ddd;
+}
+
+/* Title & Header */
+.admin-dashboard h2 {
+  font-weight: 700;
+  color: #fff;
+}
+
+.admin-dashboard h4 {
+  font-weight: 600;
+  color: #ff4d4d;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Subtle Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #2b2b2b;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff4d4d;
+}
+
+/* Navbar hover refinement */
+.navbar-nav .nav-link {
+  transition: color 0.3s ease;
+}
+.navbar-nav .nav-link:hover {
+  color: #ff4d4d !important;
+}
+
+/* ===============================
+   ADMIN UPLOAD PAGE STYLING
+=============================== */
+.admin-upload {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.upload-form {
+  background: #1b1b1b;
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
+  color: #fff;
+}
+
+.upload-form label {
+  font-weight: 500;
+}
+
+.upload-form input,
+.upload-form select,
+.upload-form textarea {
+  background: #181818;
+  border: 1px solid #333;
+  color: #fff;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.upload-form input:focus,
+.upload-form select:focus,
+.upload-form textarea:focus {
+  outline: none;
+  border-color: #ff4d4d;
+  background: #1f1f1f;
+  box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.2);
+}
+
+.upload-form button {
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+.upload-form button:hover {
+  background: #e63939;
+  transform: translateY(-2px);
+}

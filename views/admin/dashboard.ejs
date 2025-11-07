@@ -1,0 +1,80 @@
+<section class="admin-dashboard">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-speedometer2 text-danger me-2"></i> Overview</h2>
+    <span class="text-secondary small">Last updated: <%= new Date().toLocaleString() %></span>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-3 col-sm-6">
+      <div class="dashboard-card">
+        <div class="icon"><i class="bi bi-people"></i></div>
+        <div class="info">
+          <h5>Users</h5>
+          <h2><%= stats.totalUsers %></h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+      <div class="dashboard-card">
+        <div class="icon"><i class="bi bi-film"></i></div>
+        <div class="info">
+          <h5>Videos</h5>
+          <h2><%= stats.totalVideos %></h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+      <div class="dashboard-card">
+        <div class="icon"><i class="bi bi-star-fill"></i></div>
+        <div class="info">
+          <h5>Avg. Rating</h5>
+          <h2><%= stats.avgRating %></h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+      <div class="dashboard-card">
+        <div class="icon"><i class="bi bi-eye"></i></div>
+        <div class="info">
+          <h5>Total Views</h5>
+          <h2><%= stats.totalViews %></h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Uploads -->
+  <div class="card bg-black border-0 shadow-sm p-3">
+    <h4 class="fw-semibold mb-3"><i class="bi bi-clock-history me-2"></i>Recent Uploads</h4>
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Views</th>
+            <th>Uploaded</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (recent.length === 0) { %>
+            <tr><td colspan="4" class="text-center text-muted py-3">No uploads yet.</td></tr>
+          <% } else { %>
+            <% recent.forEach(video => { %>
+              <tr>
+                <td><%= video.title %></td>
+                <td><%= video.category %></td>
+                <td><%= video.views %></td>
+                <td><%= new Date(video.created_at).toLocaleString() %></td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
