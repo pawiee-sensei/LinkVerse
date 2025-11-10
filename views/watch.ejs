@@ -1,0 +1,25 @@
+<%- include('partials/header', { title: video.title, session: session }) %>
+
+<section class="container py-5">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="ratio ratio-16x9 mb-4">
+        <video controls preload="metadata" poster="/uploads/banners/<%= video.banner %>">
+          <source src="/uploads/videos/<%= video.video_file %>" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <h3 class="fw-bold text-light"><%= video.title %></h3>
+      <p class="text-secondary small mb-2">Category: <%= video.category %></p>
+      <p class="text-secondary small mb-2">Synopsis: <%= video.synopsis %></p>
+      <p class="text-secondary small mb-1">Creator: <%= video.creator %></p>
+      <p class="text-secondary small">Last Updated: <%= new Date(video.last_updated).toLocaleString() %></p>
+      <p class="text-danger small mt-3">👁 <%= video.views %> views</p>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

@@ -9,6 +9,8 @@ import { pool, dbHealthCheck } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import adminRoutes from "./routes/admin.js";
 import adminUploadsRoutes from "./routes/adminUploads.js";
+import homeRoutes from "./routes/home.js";
+import watchRoutes from "./routes/watch.js";
 
 dotenv.config();
 
@@ -53,6 +55,8 @@ app.use((req, res, next) => {
 app.use("/", authRoutes);
 app.use("/", adminRoutes);
 app.use("/", adminUploadsRoutes);
+app.use("/", homeRoutes);
+app.use("/", watchRoutes);
 
 // ----- Health Check -----
 app.get("/health", async (req, res) => {

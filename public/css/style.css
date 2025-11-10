@@ -424,3 +424,92 @@ footer {
   background: #e63939;
   transform: translateY(-2px);
 }
+
+/* ===============================
+   HERO SECTION
+=============================== */
+.hero-section {
+  height: 85vh;
+  background: url("/images/hero-bg.jpg") center center / cover no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.85));
+}
+
+.hero-content {
+  z-index: 2;
+  animation: fadeUp 1s ease-out;
+}
+
+.fade-in {
+  animation: fadeIn 1.2s ease-in-out;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===============================
+   FEATURED VIDEO CARDS
+=============================== */
+.video-card {
+  border-radius: 14px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: #1b1b1b;
+}
+
+.video-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+}
+
+.video-thumb {
+  position: relative;
+  overflow: hidden;
+}
+
+.video-thumb img {
+  height: 230px;
+  object-fit: cover;
+  width: 100%;
+  transition: transform 0.4s ease;
+}
+
+.video-card:hover img {
+  transform: scale(1.05);
+}
+
+.play-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-card:hover .play-overlay {
+  opacity: 1;
+}
+
+/* ===============================
+   TEXT + UTILS
+=============================== */
+.card-body h5 {
+  color: #fff;
+}
+
+.card-body p {
+  color: #aaa;
+}
