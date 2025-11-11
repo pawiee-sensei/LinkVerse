@@ -84,6 +84,41 @@
       <% }) %>
     <% } %>
   </div>
+  <hr class="text-secondary my-5">
+
+<!-- RECOMMENDATIONS -->
+<div class="related-section">
+  <h5 class="text-light mb-4">🎥 You May Also Like</h5>
+
+  <% if (!related || related.length === 0) { %>
+    <p class="text-secondary">No recommendations available.</p>
+  <% } else { %>
+    <div class="row g-4">
+      <% related.forEach(r => { %>
+        <div class="col-md-4 col-lg-3">
+          <a href="/watch/<%= r.id %>" class="text-decoration-none text-light">
+            <div class="card bg-dark border-0 h-100 shadow-sm hover-card">
+              <img 
+                src="/uploads/banners/<%= r.banner %>"
+                class="card-img-top rounded-top"
+                alt="<%= r.title %> Thumbnail"
+                onerror="this.src='/images/default-banner.jpg';"
+              >
+              <div class="card-body">
+                <h6 class="card-title fw-semibold"><%= r.title %></h6>
+                <p class="text-secondary small mb-1 text-uppercase"><%= r.category %></p>
+                <p class="card-text text-muted small">
+                  <%= (r.synopsis && r.synopsis.length > 70 ? r.synopsis.slice(0,70)+'...' : r.synopsis || '') %>
+                </p>
+              </div>
+            </div>
+          </a>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
 </section>
 
 <!-- STAR INTERACTION SCRIPT -->
@@ -91,9 +126,11 @@
 document.addEventListener("DOMContentLoaded", function () {
   const stars = document.querySelectorAll("#starRating .star");
   const ratingInput = document.getElementById("ratingValue");
+  const existingRating = <%= userRating || 0 %>; // passed from backend
 
-  // show all empty stars initially
-  highlightStars(0);
+  // initial state: show existing rating
+  ratingInput.value = existingRating;
+  highlightStars(existingRating);
 
   stars.forEach(star => {
     star.addEventListener("mouseover", () => {
@@ -124,6 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 </script>
+
 
 
 <%- include('partials/footer') %>

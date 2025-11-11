@@ -518,7 +518,7 @@ footer {
 /* WATCH PAGE STYLING */
 .video-card video {
   border-radius: 10px;
-  box-shadow: 0 0 20px rgba(244, 244, 244, 0.6);
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
 }
 
 .reviews-section {
@@ -544,4 +544,23 @@ footer {
 
 .star.bi-star-fill {
   color: #ffcc00 !important;
+}
+
+/* ===============================
+   RELATED / RECOMMENDED SECTION
+=============================== */
+.related-section {
+  background: #111;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.hover-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(255, 0, 0, 0.25);
 }
