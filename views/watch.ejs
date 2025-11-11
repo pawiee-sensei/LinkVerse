@@ -2,24 +2,128 @@
 
 <section class="container py-5">
   <div class="row">
+    <!-- VIDEO PLAYER -->
     <div class="col-md-8">
       <div class="ratio ratio-16x9 mb-4">
-        <video controls preload="metadata" poster="/uploads/banners/<%= video.banner %>">
+        <video controls preload="metadata" poster="/uploads/banners/<%= video.banner %>" class="w-100 rounded shadow">
           <source src="/uploads/videos/<%= video.video_file %>" type="video/mp4">
           Your browser does not support the video tag.
         </video>
       </div>
     </div>
 
+    <!-- VIDEO DETAILS -->
     <div class="col-md-4">
       <h3 class="fw-bold text-light"><%= video.title %></h3>
-      <p class="text-secondary small mb-2">Category: <%= video.category %></p>
-      <p class="text-secondary small mb-2">Synopsis: <%= video.synopsis %></p>
-      <p class="text-secondary small mb-1">Creator: <%= video.creator %></p>
-      <p class="text-secondary small">Last Updated: <%= new Date(video.last_updated).toLocaleString() %></p>
+      <p class="text-secondary small mb-2"><strong>Category:</strong> <%= video.category %></p>
+      <p class="text-secondary small mb-2"><strong>Synopsis:</strong> <%= video.synopsis %></p>
+      <p class="text-secondary small mb-1"><strong>Creator:</strong> <%= video.creator %></p>
+      <p class="text-secondary small"><strong>Last Updated:</strong> <%= new Date(video.last_updated).toLocaleString() %></p>
       <p class="text-danger small mt-3">👁 <%= video.views %> views</p>
     </div>
   </div>
+
+  <hr class="text-secondary my-4">
+
+  <!-- RATINGS & REVIEWS -->
+  <div class="reviews-section mt-4">
+    <h5 class="text-light mb-3">⭐ Ratings & Reviews</h5>
+
+    <!-- Average Rating -->
+    <div class="mb-4">
+      <span class="fs-4 text-warning"><%= avgRating %>★</span>
+      <span class="text-secondary small">average from <%= reviews.length %> review(s)</span>
+    </div>
+
+    <!-- Review Form -->
+    <% if (session.user) { %>
+    <form action="/watch/<%= video.id %>/review" method="POST" class="bg-dark p-3 rounded shadow-sm mb-4">
+      <!-- Interactive Stars -->
+      <div class="mb-3">
+  <label class="text-secondary small mb-1 d-block">Your Rating</label>
+  <div class="star-rating d-flex gap-1" id="starRating">
+    <% for(let i = 1; i <= 5; i++) { %>
+      <i class="bi bi-star fs-3 text-warning star" data-value="<%= i %>"></i>
+    <% } %>
+  </div>
+  <input type="hidden" name="rating" id="ratingValue" required>
+</div>
+
+
+      <!-- Comment -->
+      <div class="mb-2">
+        <label class="text-secondary small mb-1">Your Review</label>
+        <textarea
+          name="comment"
+          class="form-control bg-black text-light border-secondary"
+          rows="3"
+          maxlength="500"
+          placeholder="Write a short comment..."
+        ></textarea>
+      </div>
+
+      <button class="btn btn-danger btn-sm mt-2">Submit</button>
+    </form>
+    <% } else { %>
+      <p class="text-secondary small">
+        You must <a href="/login" class="text-danger">log in</a> to leave a review.
+      </p>
+    <% } %>
+
+    <!-- Existing Reviews -->
+    <% if (reviews.length === 0) { %>
+      <p class="text-muted">No reviews yet. Be the first!</p>
+    <% } else { %>
+      <% reviews.forEach(r => { %>
+        <div class="review bg-black p-3 rounded mb-3 border border-secondary">
+          <strong class="text-light"><%= r.username %></strong>
+          <span class="text-warning"> — <%= r.rating %>★</span>
+          <p class="text-light small mb-0 mt-2"><%= r.comment %></p>
+          <p class="text-secondary small mt-1"><%= new Date(r.created_at).toLocaleString() %></p>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
 </section>
+
+<!-- STAR INTERACTION SCRIPT -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const stars = document.querySelectorAll("#starRating .star");
+  const ratingInput = document.getElementById("ratingValue");
+
+  // show all empty stars initially
+  highlightStars(0);
+
+  stars.forEach(star => {
+    star.addEventListener("mouseover", () => {
+      highlightStars(parseInt(star.dataset.value));
+    });
+
+    star.addEventListener("mouseout", () => {
+      highlightStars(parseInt(ratingInput.value) || 0);
+    });
+
+    star.addEventListener("click", () => {
+      const val = parseInt(star.dataset.value);
+      ratingInput.value = val;
+      highlightStars(val);
+    });
+  });
+
+  function highlightStars(count) {
+    stars.forEach((star, index) => {
+      if (index < count) {
+        star.classList.remove("bi-star");
+        star.classList.add("bi-star-fill");
+      } else {
+        star.classList.remove("bi-star-fill");
+        star.classList.add("bi-star");
+      }
+    });
+  }
+});
+</script>
+
 
 <%- include('partials/footer') %>

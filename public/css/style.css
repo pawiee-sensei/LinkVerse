@@ -513,3 +513,35 @@ footer {
 .card-body p {
   color: #aaa;
 }
+
+
+/* WATCH PAGE STYLING */
+.video-card video {
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(244, 244, 244, 0.6);
+}
+
+.reviews-section {
+  background: #111;
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+}
+/* STAR RATING SYSTEM */
+.star-rating {
+  cursor: pointer;
+  display: inline-flex;
+}
+
+.star {
+  transition: transform 0.2s ease, color 0.2s ease;
+  color: #777;
+}
+
+.star:hover {
+  transform: scale(1.2);
+  color: #ffc107;
+}
+
+.star.bi-star-fill {
+  color: #ffcc00 !important;
+}
