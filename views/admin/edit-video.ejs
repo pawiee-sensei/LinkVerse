@@ -1,0 +1,104 @@
+<%- include('../partials/header', { title, session: session }) %>
+
+<div class="container py-5 text-light">
+  <section class="admin-edit">
+    <h2 class="fw-bold mb-4">
+      <i class="bi bi-pencil-square text-danger me-2"></i> Edit Video
+    </h2>
+
+    <form
+      action="/admin/edit/<%= video.id %>"
+      method="POST"
+      enctype="multipart/form-data"
+      class="bg-black p-4 rounded-4 shadow-sm"
+    >
+      <div class="mb-3">
+        <label class="form-label text-secondary">Title</label>
+        <input
+          type="text"
+          name="title"
+          value="<%= video.title %>"
+          class="form-control bg-dark text-light border-secondary"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label text-secondary">Synopsis</label>
+        <textarea
+          name="synopsis"
+          rows="4"
+          class="form-control bg-dark text-light border-secondary"
+          required
+        ><%= video.synopsis %></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label text-secondary">Category</label>
+        <select
+          name="category"
+          class="form-select bg-dark text-light border-secondary"
+        >
+          <option value="Drama" <%= video.category === 'Drama' ? 'selected' : '' %>>Drama</option>
+          <option value="Anime" <%= video.category === 'Anime' ? 'selected' : '' %>>Anime</option>
+          <option value="Movie" <%= video.category === 'Movie' ? 'selected' : '' %>>Movie</option>
+          <option value="Documentary" <%= video.category === 'Documentary' ? 'selected' : '' %>>Documentary</option>
+        </select>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label text-secondary">Replace Banner (optional)</label>
+          <input
+            type="file"
+            name="banner"
+            accept="image/*"
+            class="form-control bg-dark text-light border-secondary"
+          />
+        </div>
+      </div>
+
+      <div class="text-end mt-4">
+        <button class="btn btn-danger px-5 py-2 fw-semibold">
+          <i class="bi bi-save me-1"></i> Save Changes
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <hr class="text-secondary my-5">
+
+  <!-- ✅ EPISODES SECTION -->
+  <section class="episodes">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="fw-bold mb-0">
+        <i class="bi bi-collection-play text-danger me-2"></i> Episodes
+      </h4>
+      <a href="/admin/<%= video.id %>/add-episode" class="btn btn-outline-danger btn-sm fw-semibold">
+        <i class="bi bi-plus-circle me-1"></i> Add Episode
+      </a>
+    </div>
+
+    <% if (episodes.length === 0) { %>
+      <p class="text-secondary">No episodes yet. Click “Add Episode” to upload one.</p>
+    <% } else { %>
+      <div class="row g-4">
+        <% episodes.forEach(ep => { %>
+          <div class="col-md-4">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+              <div class="card-body">
+                <h6 class="fw-semibold text-light mb-1"><%= ep.episode_title %></h6>
+                <p class="text-secondary small mb-2">Episode <%= ep.episode_number %></p>
+                <video controls class="w-100 rounded">
+                  <source src="/uploads/videos/<%= ep.episode_file %>" type="video/mp4" />
+                </video>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+</div>
+
+<%- include('../partials/footer') %>
