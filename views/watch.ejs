@@ -2,24 +2,57 @@
 
 <section class="container py-5">
   <div class="row">
-    <!-- VIDEO PLAYER -->
+    <!-- MAIN VIDEO -->
     <div class="col-md-8">
       <div class="ratio ratio-16x9 mb-4">
-        <video controls preload="metadata" poster="/uploads/banners/<%= video.banner %>" class="w-100 rounded shadow">
-          <source src="/uploads/videos/<%= video.video_file %>" type="video/mp4">
+        <video controls preload="metadata" poster="/uploads/banners/<%= activeThumbnail %>" class="w-100 rounded shadow">
+          <source src="/uploads/videos/<%= activeVideoFile %>" type="video/mp4">
           Your browser does not support the video tag.
         </video>
       </div>
     </div>
 
-    <!-- VIDEO DETAILS -->
+    <!-- SIDEBAR -->
     <div class="col-md-4">
-      <h3 class="fw-bold text-light"><%= video.title %></h3>
+      <h3 class="fw-bold text-light"><%= activeEpisodeTitle %></h3>
       <p class="text-secondary small mb-2"><strong>Category:</strong> <%= video.category %></p>
+      <p class="text-secondary small mb-2"><strong>Genre:</strong> <%= video.genre || "Unspecified" %></p
       <p class="text-secondary small mb-2"><strong>Synopsis:</strong> <%= video.synopsis %></p>
       <p class="text-secondary small mb-1"><strong>Creator:</strong> <%= video.creator %></p>
       <p class="text-secondary small"><strong>Last Updated:</strong> <%= new Date(video.last_updated).toLocaleString() %></p>
       <p class="text-danger small mt-3">👁 <%= video.views %> views</p>
+
+      <% if (episodes && episodes.length > 0) { %>
+        <hr class="text-secondary">
+        <h5 class="text-light mb-3">
+          <i class="bi bi-collection-play text-danger me-2"></i> Episodes
+        </h5>
+
+        <div class="list-group bg-dark border-secondary rounded">
+          <% episodes.forEach((ep) => { %>
+            <a 
+              href="/watch/<%= video.id %><%= ep.id ? ('?episode=' + ep.id) : '' %>"
+              class="list-group-item list-group-item-action bg-dark text-light border-secondary d-flex align-items-center gap-3
+              <%= activeVideoFile.endsWith(ep.episode_file) ? 'active border-danger' : '' %>">
+
+              <img 
+                src="<%= ep.isMain ? '/uploads/banners/' + ep.episode_thumbnail : '/uploads/episode_thumbnails/' + ep.episode_thumbnail %>" 
+                class="rounded" width="70" height="45"
+                style="object-fit: cover;"
+                onerror="this.src='/images/default-banner.jpg';"
+              >
+
+              <div>
+                <strong><%= ep.episode_title %></strong><br>
+                <small class="text-secondary">Episode <%= ep.episode_number %></small>
+                <% if (activeVideoFile.endsWith(ep.episode_file)) { %>
+                  <span class="badge bg-danger ms-2">▶ Now Playing</span>
+                <% } %>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
     </div>
   </div>
 
@@ -40,15 +73,14 @@
     <form action="/watch/<%= video.id %>/review" method="POST" class="bg-dark p-3 rounded shadow-sm mb-4">
       <!-- Interactive Stars -->
       <div class="mb-3">
-  <label class="text-secondary small mb-1 d-block">Your Rating</label>
-  <div class="star-rating d-flex gap-1" id="starRating">
-    <% for(let i = 1; i <= 5; i++) { %>
-      <i class="bi bi-star fs-3 text-warning star" data-value="<%= i %>"></i>
-    <% } %>
-  </div>
-  <input type="hidden" name="rating" id="ratingValue" required>
-</div>
-
+        <label class="text-secondary small mb-1 d-block">Your Rating</label>
+        <div class="star-rating d-flex gap-1" id="starRating">
+          <% for(let i = 1; i <= 5; i++) { %>
+            <i class="bi bi-star fs-3 text-warning star" data-value="<%= i %>"></i>
+          <% } %>
+        </div>
+        <input type="hidden" name="rating" id="ratingValue" required>
+      </div>
 
       <!-- Comment -->
       <div class="mb-2">
@@ -58,8 +90,8 @@
           class="form-control bg-black text-light border-secondary"
           rows="3"
           maxlength="500"
-          placeholder="Write a short comment..."
-        ></textarea>
+          placeholder="Write a short comment...">
+        </textarea>
       </div>
 
       <button class="btn btn-danger btn-sm mt-2">Submit</button>
@@ -84,63 +116,55 @@
       <% }) %>
     <% } %>
   </div>
+
   <hr class="text-secondary my-5">
 
-<!-- RECOMMENDATIONS -->
-<div class="related-section">
-  <h5 class="text-light mb-4">🎥 You May Also Like</h5>
+  <!-- RECOMMENDATIONS -->
+  <div class="related-section">
+    <h5 class="text-light mb-4">🎥 You May Also Like</h5>
 
-  <% if (!related || related.length === 0) { %>
-    <p class="text-secondary">No recommendations available.</p>
-  <% } else { %>
-    <div class="row g-4">
-      <% related.forEach(r => { %>
-        <div class="col-md-4 col-lg-3">
-          <a href="/watch/<%= r.id %>" class="text-decoration-none text-light">
-            <div class="card bg-dark border-0 h-100 shadow-sm hover-card">
-              <img 
-                src="/uploads/banners/<%= r.banner %>"
-                class="card-img-top rounded-top"
-                alt="<%= r.title %> Thumbnail"
-                onerror="this.src='/images/default-banner.jpg';"
-              >
-              <div class="card-body">
-                <h6 class="card-title fw-semibold"><%= r.title %></h6>
-                <p class="text-secondary small mb-1 text-uppercase"><%= r.category %></p>
-                <p class="card-text text-muted small">
-                  <%= (r.synopsis && r.synopsis.length > 70 ? r.synopsis.slice(0,70)+'...' : r.synopsis || '') %>
-                </p>
+    <% if (!related || related.length === 0) { %>
+      <p class="text-secondary">No recommendations available.</p>
+    <% } else { %>
+      <div class="row g-4">
+        <% related.forEach(r => { %>
+          <div class="col-md-4 col-lg-3">
+            <a href="/watch/<%= r.id %>" class="text-decoration-none text-light">
+              <div class="card bg-dark border-0 h-100 shadow-sm hover-card">
+                <img 
+                  src="/uploads/banners/<%= r.banner %>"
+                  class="card-img-top rounded-top"
+                  alt="<%= r.title %> Thumbnail"
+                  onerror="this.src='/images/default-banner.jpg';"
+                >
+                <div class="card-body">
+                  <h6 class="card-title fw-semibold"><%= r.title %></h6>
+                  <p class="text-secondary small mb-1 text-uppercase"><%= r.category %></p>
+                  <p class="card-text text-muted small">
+                    <%= (r.synopsis && r.synopsis.length > 70 ? r.synopsis.slice(0,70)+'...' : r.synopsis || '') %>
+                  </p>
+                </div>
               </div>
-            </div>
-          </a>
-        </div>
-      <% }) %>
-    </div>
-  <% } %>
-</div>
-
+            </a>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
 </section>
 
-<!-- STAR INTERACTION SCRIPT -->
+<!-- STAR RATING SCRIPT -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const stars = document.querySelectorAll("#starRating .star");
   const ratingInput = document.getElementById("ratingValue");
-  const existingRating = <%= userRating || 0 %>; // passed from backend
-
-  // initial state: show existing rating
+  const existingRating = <%= userRating || 0 %>;
   ratingInput.value = existingRating;
   highlightStars(existingRating);
 
   stars.forEach(star => {
-    star.addEventListener("mouseover", () => {
-      highlightStars(parseInt(star.dataset.value));
-    });
-
-    star.addEventListener("mouseout", () => {
-      highlightStars(parseInt(ratingInput.value) || 0);
-    });
-
+    star.addEventListener("mouseover", () => highlightStars(parseInt(star.dataset.value)));
+    star.addEventListener("mouseout", () => highlightStars(parseInt(ratingInput.value) || 0));
     star.addEventListener("click", () => {
       const val = parseInt(star.dataset.value);
       ratingInput.value = val;
@@ -149,19 +173,15 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   function highlightStars(count) {
-    stars.forEach((star, index) => {
-      if (index < count) {
-        star.classList.remove("bi-star");
-        star.classList.add("bi-star-fill");
+    stars.forEach((star, i) => {
+      if (i < count) {
+        star.classList.replace("bi-star", "bi-star-fill");
       } else {
-        star.classList.remove("bi-star-fill");
-        star.classList.add("bi-star");
+        star.classList.replace("bi-star-fill", "bi-star");
       }
     });
   }
 });
 </script>
-
-
 
 <%- include('partials/footer') %>

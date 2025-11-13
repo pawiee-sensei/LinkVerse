@@ -1,4 +1,4 @@
-
+<%- include('../partials/header', { title: "Upload New Content", session: session }) %>
 
 <div class="container py-5 text-light">
   <section class="admin-upload">
@@ -36,11 +36,7 @@
 
       <div class="mb-3">
         <label class="form-label text-secondary">Category</label>
-        <select
-          name="category"
-          class="form-select bg-dark text-light border-secondary"
-          required
-        >
+        <select name="category" class="form-select bg-dark text-light border-secondary" required>
           <option value="Drama">Drama</option>
           <option value="Anime">Anime</option>
           <option value="Movie">Movie</option>
@@ -48,26 +44,35 @@
         </select>
       </div>
 
+      <!-- 🎯 FIXED: GENRE IS NOW INSIDE THE FORM -->
+      <div class="mb-3">
+        <label class="form-label text-secondary">Genre</label>
+        <select name="genre" class="form-select bg-dark text-light border-secondary" required>
+          <option value="">Select Genre</option>
+          <option>Action</option>
+          <option>Adventure</option>
+          <option>Comedy</option>
+          <option>Drama</option>
+          <option>Fantasy</option>
+          <option>Horror</option>
+          <option>Romance</option>
+          <option>Sci-Fi</option>
+          <option>Thriller</option>
+          <option>Slice of Life</option>
+          <option>Supernatural</option>
+          <option>Sports</option>
+        </select>
+      </div>
+
       <div class="row mb-3">
         <div class="col-md-6">
           <label class="form-label text-secondary">Banner Image</label>
-          <input
-            type="file"
-            name="banner"
-            accept="image/*"
-            class="form-control bg-dark text-light border-secondary"
-            required
-          />
+          <input type="file" name="banner" accept="image/*" class="form-control bg-dark text-light border-secondary" required />
         </div>
+
         <div class="col-md-6">
           <label class="form-label text-secondary">Video File (MP4, MOV, MKV)</label>
-          <input
-            type="file"
-            name="video_file"
-            accept="video/*"
-            class="form-control bg-dark text-light border-secondary"
-            required
-          />
+          <input type="file" name="video_file" accept="video/*" class="form-control bg-dark text-light border-secondary" required />
         </div>
       </div>
 
@@ -79,5 +84,3 @@
     </form>
   </section>
 </div>
-
-

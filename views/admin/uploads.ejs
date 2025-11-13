@@ -1,6 +1,5 @@
-
-
 <div class="container-fluid py-4">
+
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="text-light fw-bold">🎞 Manage Uploads</h3>
     <a href="/admin/upload" class="btn btn-danger">
@@ -10,39 +9,112 @@
 
   <!-- Search + Sort -->
   <form class="d-flex mb-4" method="GET" action="/admin/uploads">
-    <input type="text" name="search" class="form-control me-2" placeholder="Search title..." value="<%= search %>">
+    <input 
+      type="text" 
+      name="search" 
+      class="form-control me-2" 
+      placeholder="Search title..." 
+      value="<%= search %>"
+    >
+
     <select name="sort" class="form-select me-2">
       <option value="created_at" <%= sort === 'created_at' ? 'selected' : '' %>>Newest</option>
       <option value="views" <%= sort === 'views' ? 'selected' : '' %>>Most Viewed</option>
       <option value="title" <%= sort === 'title' ? 'selected' : '' %>>Title</option>
     </select>
+
     <button class="btn btn-outline-light" type="submit">Search</button>
   </form>
 
   <!-- Video Grid -->
   <div class="row g-4">
+
     <% if (videos.length === 0) { %>
+
       <p class="text-center text-secondary">No videos found.</p>
+
     <% } else { %>
+
       <% videos.forEach(video => { %>
+
         <div class="col-md-3">
-          <div class="card bg-dark text-light border-0 shadow-sm h-100 position-relative">
-            <img src="/uploads/banners/<%= video.banner %>" class="card-img-top" alt="<%= video.title %>" onerror="this.src='/images/default-banner.jpg';">
-            <div class="card-body">
-              <h6 class="card-title"><%= video.title %></h6>
+
+          <!-- CARD -->
+          <div class="card bg-dark text-light border-0 shadow-sm rounded-3 overflow-hidden"
+               style="height: 540px;">
+
+            <!-- BANNER = 70% OF CARD (≈378px) -->
+            <div style="height: 378px; width: 100%; overflow: hidden;">
+              <img 
+                src="/uploads/banners/<%= video.banner %>"
+                alt="<%= video.title %>"
+                onerror="this.src='/images/default-banner.jpg';"
+                style="width: 100%; height: 100%; object-fit: cover;"
+              >
+            </div>
+
+            <!-- INFO (30%) -->
+            <div class="card-body py-3">
+              <h6 class="card-title mb-1 text-truncate"><%= video.title %></h6>
               <p class="small text-muted mb-1"><%= video.category %></p>
               <p class="small text-secondary mb-1">👁 <%= video.views %> views</p>
               <p class="small text-secondary">🕒 <%= new Date(video.created_at).toLocaleString() %></p>
             </div>
-            <div class="card-footer bg-transparent border-top border-secondary d-flex justify-content-between">
-              <a href="/admin/edit/<%= video.id %>" class="btn btn-sm btn-outline-light"><i class="bi bi-pencil-square"></i></a>
-              <a href="/admin/delete/<%= video.id %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this video?')"><i class="bi bi-trash"></i></a>
+
+            <!-- ACTION BUTTONS -->
+            <div class="px-3 pb-3 d-flex justify-content-end gap-2">
+
+              <!-- Edit -->
+              <a 
+                href="/admin/edit/<%= video.id %>" 
+                class="btn btn-sm btn-outline-light action-btn">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+
+              <!-- Delete -->
+              <form 
+                action="/admin/delete/<%= video.id %>" 
+                method="POST"
+                onsubmit="return confirm('Delete this video?')"
+              >
+                <button type="submit" class="btn btn-sm btn-outline-danger action-btn">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+
             </div>
+
           </div>
         </div>
+
       <% }) %>
+
     <% } %>
+
   </div>
 </div>
 
+<style>
+.action-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  border-radius: 6px;
+}
 
+.action-btn i {
+  font-size: 1rem;
+}
+
+.action-btn.btn-outline-danger:hover {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
+
+.action-btn.btn-outline-light:hover {
+  background-color: #ffffff22 !important;
+}
+</style>

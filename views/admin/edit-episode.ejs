@@ -1,0 +1,39 @@
+<div class="container py-5 text-light">
+  <h2 class="fw-bold mb-4">
+    <i class="bi bi-pencil-square text-danger me-2"></i> Edit Episode
+  </h2>
+
+  <form
+    action="/admin/edit-episode/<%= episode.id %>"
+    method="POST"
+    enctype="multipart/form-data"
+    class="bg-black p-4 rounded-4 shadow-sm"
+  >
+    <div class="mb-3">
+      <label class="form-label text-secondary">Episode Title</label>
+      <input type="text" name="episode_title" value="<%= episode.episode_title %>" class="form-control bg-dark text-light border-secondary" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label text-secondary">Episode Number</label>
+      <input type="number" name="episode_number" value="<%= episode.episode_number %>" class="form-control bg-dark text-light border-secondary" required>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label text-secondary">Replace Video File (optional)</label>
+        <input type="file" name="episode_file" accept="video/*" class="form-control">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label text-secondary">Replace Thumbnail (optional)</label>
+        <input type="file" name="episode_thumbnail" accept="image/*" class="form-control">
+      </div>
+    </div>
+
+    <div class="text-end">
+      <button class="btn btn-danger px-5 py-2 fw-semibold">
+        <i class="bi bi-save me-1"></i> Save Changes
+      </button>
+    </div>
+  </form>
+</div>

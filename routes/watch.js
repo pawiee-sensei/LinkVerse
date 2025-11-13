@@ -8,17 +8,68 @@ const router = express.Router();
 // -----------------------------
 router.get("/watch/:id", async (req, res) => {
   const videoId = req.params.id;
+  const episodeId = req.query.episode || null;
   const user = req.session.user;
 
   try {
-    // fetch main video
+    // Fetch main video
     const [[video]] = await pool.query("SELECT * FROM videos WHERE id = ?", [videoId]);
     if (!video) return res.status(404).send("Video not found");
 
-    // increment view count
+    // Increment main video views (only once per main video load)
     await pool.query("UPDATE videos SET views = views + 1 WHERE id = ?", [videoId]);
 
-    // fetch reviews with usernames
+    // Fetch all episodes for this video
+    const [episodesFromDB] = await pool.query(
+      "SELECT * FROM video_episodes WHERE video_id = ? ORDER BY episode_number ASC",
+      [videoId]
+    );
+
+    // Combine main video as Episode 1 (only if episodes exist)
+    const episodes =
+      episodesFromDB.length > 0
+        ? [
+            {
+              id: null, // no DB ID for the main video
+              episode_title: video.title,
+              episode_number: 1,
+              episode_file: video.video_file,
+              episode_thumbnail: video.banner,
+              isMain: true,
+            },
+            ...episodesFromDB.map((ep) => ({
+              ...ep,
+              episode_number: ep.episode_number + 1, // shift numbering (main = Ep1)
+              isMain: false,
+            })),
+          ]
+        : []; // empty for non-series videos
+
+    // Determine active video details
+    let activeVideoFile = video.video_file;
+    let activeEpisodeTitle = video.title;
+    let activeThumbnail = video.banner;
+
+    if (episodesFromDB.length > 0) {
+      // This is a series → default to Episode 1 (main video)
+      activeEpisodeTitle = `${video.title} — Episode 1`;
+
+      if (episodeId) {
+        const [[selectedEpisode]] = await pool.query(
+          "SELECT * FROM video_episodes WHERE id = ? AND video_id = ?",
+          [episodeId, videoId]
+        );
+
+        if (selectedEpisode) {
+          activeVideoFile = selectedEpisode.episode_file;
+          activeEpisodeTitle = `${video.title} — Episode ${selectedEpisode.episode_number}`;
+          activeThumbnail =
+            selectedEpisode.episode_thumbnail || video.banner;
+        }
+      }
+    }
+
+    // Fetch reviews with user info
     const [reviews] = await pool.query(
       `SELECT r.*, u.username
        FROM reviews r
@@ -28,13 +79,13 @@ router.get("/watch/:id", async (req, res) => {
       [videoId]
     );
 
-    // calculate average rating
+    // Average rating
     const [[{ avgRating }]] = await pool.query(
       "SELECT ROUND(AVG(rating), 1) AS avgRating FROM reviews WHERE video_id = ?",
       [videoId]
     );
 
-    // get the logged-in user's previous rating if exists
+    // User’s existing rating
     let userRating = null;
     if (user) {
       const [[userReview]] = await pool.query(
@@ -44,7 +95,7 @@ router.get("/watch/:id", async (req, res) => {
       if (userReview) userRating = userReview.rating;
     }
 
-    // fetch related / recommended videos by category
+    // Related videos
     const [related] = await pool.query(
       `SELECT id, title, banner, category, synopsis
        FROM videos
@@ -54,19 +105,23 @@ router.get("/watch/:id", async (req, res) => {
       [video.category, video.id]
     );
 
-    // render watch page
+    // Render page
     res.render("watch", {
-      title: `${video.title} — LinkVerse`,
+      title: activeEpisodeTitle,
       layout: false,
       video,
       reviews,
       avgRating: avgRating || 0,
       session: req.session,
       userRating,
-      related, // 👈 pass related videos
+      related,
+      episodes,
+      activeVideoFile,
+      activeThumbnail,
+      activeEpisodeTitle,
     });
   } catch (err) {
-    console.error("❌ Error loading video:", err);
+    console.error("❌ Error loading watch page:", err);
     res.status(500).send("Database Error");
   }
 });
@@ -82,20 +137,17 @@ router.post("/watch/:id/review", async (req, res) => {
   if (!user) return res.redirect("/login");
 
   try {
-    // check if the user already left a review
     const [[existing]] = await pool.query(
       "SELECT id FROM reviews WHERE user_id = ? AND video_id = ?",
       [user.id, videoId]
     );
 
     if (existing) {
-      // update the existing review
       await pool.query(
-        "UPDATE reviews SET rating = ?, comment = ?, updated_at = NOW() WHERE id = ?",
+        "UPDATE reviews SET rating=?, comment=?, updated_at=NOW() WHERE id=?",
         [rating, comment, existing.id]
       );
     } else {
-      // insert a new review
       await pool.query(
         "INSERT INTO reviews (user_id, video_id, rating, comment) VALUES (?, ?, ?, ?)",
         [user.id, videoId, rating, comment]
@@ -104,7 +156,7 @@ router.post("/watch/:id/review", async (req, res) => {
 
     res.redirect(`/watch/${videoId}`);
   } catch (err) {
-    console.error("❌ Error saving review:", err);
+    console.error("❌ Review Save Error:", err);
     res.status(500).send("Database Error");
   }
 });
