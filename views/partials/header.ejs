@@ -49,5 +49,12 @@
     </div>
   </div>
 </nav>
+<% if (page && ['home', 'anime', 'drama', 'movies'].includes(page)) { %>
+  <%- include('user-navbar', { page }) %>
+<% } %>
+
+
+
+
 
 <main class="container-fluid p-0">

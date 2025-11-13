@@ -52,11 +52,12 @@ app.use((req, res, next) => {
 });
 
 // ----- Routes -----
+app.use("/", homeRoutes);
+app.use("/", watchRoutes);
 app.use("/", authRoutes);
 app.use("/", adminRoutes);
 app.use("/", adminUploadsRoutes);
-app.use("/", homeRoutes);
-app.use("/", watchRoutes);
+
 
 // ----- Health Check -----
 app.get("/health", async (req, res) => {

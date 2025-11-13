@@ -45,25 +45,40 @@ router.get("/admin/dashboard", ensureAdmin, async (req, res) => {
     res.status(500).send("Database Error");
   }
 });
-
-/* ---------------------------------------------
-   ADMIN UPLOADS LIST
----------------------------------------------- */
+// ---------------------------
+// ADMIN UPLOADS LIST (WITH PAGINATION)
+// ---------------------------
 router.get("/admin/uploads", ensureAdmin, async (req, res) => {
   try {
     const search = req.query.search || "";
     const sort = req.query.sort || "created_at";
+    const page = parseInt(req.query.page) || 1;
+    const limit = 8; // VIDEOS PER PAGE
+    const offset = (page - 1) * limit;
 
+    // Count total videos
+    const [[{ total }]] = await pool.query(
+      `SELECT COUNT(*) AS total
+       FROM videos
+       WHERE title LIKE ? 
+          OR category LIKE ?
+          OR genre LIKE ?`,
+      [`%${search}%`, `%${search}%`, `%${search}%`]
+    );
+
+    // Fetch paginated videos
     const [videos] = await pool.query(
-  `SELECT id, title, category, genre, views, banner, last_updated AS created_at
-   FROM videos
-   WHERE title LIKE ? 
-      OR category LIKE ?
-      OR genre LIKE ?
-   ORDER BY ${sort} DESC`,
-  [`%${search}%`, `%${search}%`, `%${search}%`]
-);
+      `SELECT id, title, category, genre, views, banner, last_updated AS created_at
+       FROM videos
+       WHERE title LIKE ?
+          OR category LIKE ?
+          OR genre LIKE ?
+       ORDER BY ${sort} DESC
+       LIMIT ? OFFSET ?`,
+      [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
+    );
 
+    const totalPages = Math.ceil(total / limit);
 
     res.render("admin/uploads", {
       title: "Manage Uploads — Admin",
@@ -72,12 +87,15 @@ router.get("/admin/uploads", ensureAdmin, async (req, res) => {
       videos,
       search,
       sort,
+      page,
+      totalPages,
     });
   } catch (err) {
-    console.error("❌ Error fetching uploads:", err);
+    console.error("❌ Error fetching videos:", err);
     res.status(500).send("Database Error");
   }
 });
+
 
 /* ---------------------------------------------
    ADMIN: UPLOAD FORM (GET)

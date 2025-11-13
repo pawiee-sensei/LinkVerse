@@ -1,0 +1,70 @@
+<%- include('../partials/header', { title, session, page }) %>
+
+<div class="container py-4">
+
+  <h3 class="text-light fw-bold mb-4"><%= title %></h3>
+
+  <div class="row g-4">
+
+    <% if (videos.length === 0) { %>
+      <p class="text-secondary">No videos found.</p>
+    <% } else { %>
+
+      <% videos.forEach(video => { %>
+      <div class="col-md-3">
+
+        <div class="card bg-dark text-light border-0 shadow-sm rounded overflow-hidden" style="height: 420px;">
+          
+          <div style="height: 260px; overflow: hidden;">
+            <img src="/uploads/banners/<%= video.banner %>" 
+                 class="w-100 h-100"
+                 style="object-fit: cover"
+                 onerror="this.src='/images/default-banner.jpg';">
+          </div>
+
+          <div class="card-body">
+            <h6 class="text-truncate fw-semibold"><%= video.title %></h6>
+            <p class="text-secondary small mb-1 text-uppercase"><%= video.category %></p>
+            <p class="text-muted small">👁 <%= video.views %> views</p>
+          </div>
+
+          <a href="/watch/<%= video.id %>" 
+             class="stretched-link"></a>
+
+        </div>
+
+      </div>
+      <% }) %>
+
+    <% } %>
+
+  </div>
+
+  <!-- PAGINATION -->
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+
+      <% if (pageNum > 1) { %>
+      <li class="page-item">
+        <a class="page-link bg-dark text-light" href="?page=<%= pageNum - 1 %>">Previous</a>
+      </li>
+      <% } %>
+
+      <% for (let i = 1; i <= totalPages; i++) { %>
+      <li class="page-item <%= pageNum === i ? 'active' : '' %>">
+        <a class="page-link bg-dark text-light border-secondary" href="?page=<%= i %>"><%= i %></a>
+      </li>
+      <% } %>
+
+      <% if (pageNum < totalPages) { %>
+      <li class="page-item">
+        <a class="page-link bg-dark text-light" href="?page=<%= pageNum + 1 %>">Next</a>
+      </li>
+      <% } %>
+
+    </ul>
+  </nav>
+
+</div>
+
+<%- include('../partials/footer') %>

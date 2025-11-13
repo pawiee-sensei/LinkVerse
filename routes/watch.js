@@ -1,3 +1,4 @@
+// routes/watch.js
 import express from "express";
 import { pool } from "../config/db.js";
 
@@ -12,64 +13,55 @@ router.get("/watch/:id", async (req, res) => {
   const user = req.session.user;
 
   try {
-    // Fetch main video
+    // fetch main video
     const [[video]] = await pool.query("SELECT * FROM videos WHERE id = ?", [videoId]);
     if (!video) return res.status(404).send("Video not found");
 
-    // Increment main video views (only once per main video load)
+    // increment views for the main video
     await pool.query("UPDATE videos SET views = views + 1 WHERE id = ?", [videoId]);
 
-    // Fetch all episodes for this video
+    // fetch episodes from DB (those explicitly uploaded as episodes)
     const [episodesFromDB] = await pool.query(
       "SELECT * FROM video_episodes WHERE video_id = ? ORDER BY episode_number ASC",
       [videoId]
     );
 
-    // Combine main video as Episode 1 (only if episodes exist)
-    const episodes =
-      episodesFromDB.length > 0
-        ? [
-            {
-              id: null, // no DB ID for the main video
-              episode_title: video.title,
-              episode_number: 1,
-              episode_file: video.video_file,
-              episode_thumbnail: video.banner,
-              isMain: true,
-            },
-            ...episodesFromDB.map((ep) => ({
-              ...ep,
-              episode_number: ep.episode_number + 1, // shift numbering (main = Ep1)
-              isMain: false,
-            })),
-          ]
-        : []; // empty for non-series videos
+    // Build episodes array — include main video as episode 1
+    // main video will have id=null to differentiate it
+    const episodes = [
+      {
+        id: null,
+        episode_title: video.title,
+        episode_number: 1,
+        episode_file: video.video_file,
+        episode_thumbnail: video.banner,
+        isMain: true,
+      },
+      // shift DB episodes to start at episode_number + 1 (so main = 1)
+      ...episodesFromDB.map((ep) => ({
+        ...ep,
+        episode_number: (ep.episode_number || 0) + 1,
+        isMain: false,
+      })),
+    ];
 
-    // Determine active video details
-    let activeVideoFile = video.video_file;
-    let activeEpisodeTitle = video.title;
-    let activeThumbnail = video.banner;
-
-    if (episodesFromDB.length > 0) {
-      // This is a series → default to Episode 1 (main video)
-      activeEpisodeTitle = `${video.title} — Episode 1`;
-
-      if (episodeId) {
-        const [[selectedEpisode]] = await pool.query(
-          "SELECT * FROM video_episodes WHERE id = ? AND video_id = ?",
-          [episodeId, videoId]
-        );
-
-        if (selectedEpisode) {
-          activeVideoFile = selectedEpisode.episode_file;
-          activeEpisodeTitle = `${video.title} — Episode ${selectedEpisode.episode_number}`;
-          activeThumbnail =
-            selectedEpisode.episode_thumbnail || video.banner;
-        }
-      }
+    // Determine which episode is active
+    // default -> main (episodes[0])
+    let activeEpisode = episodes[0];
+    if (episodeId) {
+      // episodeId comes from query string and corresponds to video_episodes.id
+      const found = episodes.find((e) => e.id && String(e.id) === String(episodeId));
+      if (found) activeEpisode = found;
     }
 
-    // Fetch reviews with user info
+    // Use activeEpisode's file/thumbnail/title
+    const activeVideoFile = activeEpisode.episode_file;
+    const activeThumbnail = activeEpisode.episode_thumbnail || video.banner;
+    const activeEpisodeTitle = activeEpisode.isMain
+      ? video.title
+      : `${video.title} — ${activeEpisode.episode_title || `Episode ${activeEpisode.episode_number}`}`;
+
+    // fetch reviews with usernames
     const [reviews] = await pool.query(
       `SELECT r.*, u.username
        FROM reviews r
@@ -79,13 +71,13 @@ router.get("/watch/:id", async (req, res) => {
       [videoId]
     );
 
-    // Average rating
+    // average rating
     const [[{ avgRating }]] = await pool.query(
       "SELECT ROUND(AVG(rating), 1) AS avgRating FROM reviews WHERE video_id = ?",
       [videoId]
     );
 
-    // User’s existing rating
+    // user's rating (if logged in)
     let userRating = null;
     if (user) {
       const [[userReview]] = await pool.query(
@@ -95,7 +87,7 @@ router.get("/watch/:id", async (req, res) => {
       if (userReview) userRating = userReview.rating;
     }
 
-    // Related videos
+    // related videos (same category excluding this video)
     const [related] = await pool.query(
       `SELECT id, title, banner, category, synopsis
        FROM videos
@@ -105,20 +97,21 @@ router.get("/watch/:id", async (req, res) => {
       [video.category, video.id]
     );
 
-    // Render page
+    // Render page — IMPORTANT: include page (even empty) so header won't crash
     res.render("watch", {
       title: activeEpisodeTitle,
       layout: false,
       video,
-      reviews,
-      avgRating: avgRating || 0,
-      session: req.session,
-      userRating,
-      related,
       episodes,
       activeVideoFile,
       activeThumbnail,
       activeEpisodeTitle,
+      reviews,
+      avgRating: avgRating || 0,
+      session: req.session,
+      userRating: userRating || 0,
+      related,
+      page: "", // <<< prevents header 'page is not defined' errors
     });
   } catch (err) {
     console.error("❌ Error loading watch page:", err);
@@ -144,7 +137,7 @@ router.post("/watch/:id/review", async (req, res) => {
 
     if (existing) {
       await pool.query(
-        "UPDATE reviews SET rating=?, comment=?, updated_at=NOW() WHERE id=?",
+        "UPDATE reviews SET rating = ?, comment = ?, updated_at = NOW() WHERE id = ?",
         [rating, comment, existing.id]
       );
     } else {
@@ -156,7 +149,7 @@ router.post("/watch/:id/review", async (req, res) => {
 
     res.redirect(`/watch/${videoId}`);
   } catch (err) {
-    console.error("❌ Review Save Error:", err);
+    console.error("❌ Error saving review:", err);
     res.status(500).send("Database Error");
   }
 });

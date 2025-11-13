@@ -1,11 +1,20 @@
 <%- include('partials/header', { title: "Home", session: session }) %>
 
-<!-- HERO SECTION -->
+<!-- ========================= -->
+<!-- HERO SECTION (HIDDEN ON SEARCH) -->
+<!-- ========================= -->
+<% if (!search || search.trim() === "") { %>
 <section class="hero-section position-relative text-light d-flex flex-column justify-content-center align-items-center text-center">
   <div class="hero-overlay"></div>
   <div class="hero-content position-relative">
-    <h1 class="display-4 fw-bold mb-3 fade-in">Welcome to <span class="text-danger">LinkVerse</span></h1>
-    <p class="lead text-secondary fade-in">Stream and explore stories — films, series, and more, shared by creators.</p>
+    <h1 class="display-4 fw-bold mb-3 fade-in">
+      Welcome to <span class="text-danger">LinkVerse</span>
+    </h1>
+
+    <p class="lead text-secondary fade-in">
+      Stream and explore stories — films, series, and more, shared by creators.
+    </p>
+
     <% if (!session.user) { %>
       <a href="/register" class="btn btn-danger px-4 mt-4 fade-in">Get Started</a>
     <% } else { %>
@@ -13,25 +22,48 @@
     <% } %>
   </div>
 </section>
+<% } %>
 
-<!-- FEATURED UPLOADS -->
+
+<!-- ========================= -->
+<!-- FEATURED / SEARCH RESULTS -->
+<!-- ========================= -->
 <section id="featured" class="container my-5">
+
+  <!-- Top Title -->
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-semibold text-light mb-0">🔥 Featured Uploads</h3>
+
+    <% if (!search || search.trim() === "") { %>
+      <!-- Normal Home Title -->
+      <h3 class="fw-semibold text-light mb-0">🔥 Featured Uploads</h3>
+    <% } else { %>
+      <!-- Search Title -->
+      <h3 class="fw-semibold text-light mb-0">
+        🔍 Search Results for "<%= search %>"
+      </h3>
+    <% } %>
 
     <% if (videos && videos.length > 0) { %>
-      <span class="text-secondary small">Showing <%= videos.length %> uploaded titles</span>
+      <span class="text-secondary small">
+        Showing <%= videos.length %> uploaded titles
+      </span>
     <% } %>
+
   </div>
 
+  <!-- Results Grid -->
   <% if (!videos || videos.length === 0) { %>
-    <p class="text-center text-secondary">No uploads yet. Check back soon!</p>
+    <p class="text-center text-secondary mt-5">No results found.</p>
+
   <% } else { %>
     <div class="row g-4">
+
       <% videos.forEach(video => { %>
         <div class="col-md-4 col-lg-3">
           <a href="/watch/<%= video.id %>" class="text-decoration-none text-light">
+
             <div class="card video-card bg-dark border-0 h-100 shadow-sm position-relative">
+
               <div class="video-thumb position-relative">
                 <img 
                   src="/uploads/banners/<%= video.banner %>" 
@@ -47,21 +79,27 @@
               <div class="card-body">
                 <h5 class="card-title fw-semibold"><%= video.title %></h5>
                 <p class="small text-secondary mb-1 text-uppercase"><%= video.category %></p>
+
                 <p class="card-text text-muted small">
-                  <%= (video.synopsis && video.synopsis.length > 80 ? video.synopsis.slice(0, 80) + '...' : video.synopsis || '') %>
+                  <%= (video.synopsis && video.synopsis.length > 80 
+                        ? video.synopsis.slice(0, 80) + '...' 
+                        : video.synopsis || '') %>
                 </p>
               </div>
+
             </div>
+
           </a>
         </div>
       <% }) %>
+
     </div>
   <% } %>
+
 </section>
 
-<!-- Optional: developer console confirmation -->
 <script>
-  console.log("✅ Home page rendered successfully with <%= videos?.length || 0 %> video(s).");
+  console.log("✅ Home page rendered with <%= videos?.length || 0 %> video(s).");
 </script>
 
 <%- include('partials/footer') %>

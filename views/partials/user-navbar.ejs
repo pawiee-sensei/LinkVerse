@@ -1,0 +1,66 @@
+<nav class="bg-black py-2">
+  <div class="container d-flex align-items-center">
+
+    <!-- LEFT SIDE: CATEGORY NAV -->
+    <div class="d-flex align-items-center gap-4 me-4">
+
+      <a href="/movies"
+         class="nav-link-category <%= page==='movies' ? 'active-cat' : '' %>">
+        Movies
+      </a>
+
+      <a href="/drama"
+         class="nav-link-category <%= page==='drama' ? 'active-cat' : '' %>">
+        Drama
+      </a>
+
+      <a href="/anime"
+         class="nav-link-category <%= page==='anime' ? 'active-cat' : '' %>">
+        Anime
+      </a>
+
+    </div>
+
+    <!-- SEARCH BAR (auto-detects where to search) -->
+    <form 
+      action="<%= page==='movies' ? '/movies' : page==='drama' ? '/drama' : page==='anime' ? '/anime' : '/' %>"
+      method="GET" 
+      class="d-flex align-items-center flex-grow-1"
+    >
+
+      <input 
+        type="text"
+        name="q"
+        value="<%= typeof search !== 'undefined' ? search : '' %>"
+        placeholder="Search..."
+        class="form-control bg-dark text-light border-secondary"
+        style="max-width: 500px;"
+      >
+
+      <button class="btn btn-danger ms-2">
+        <i class="bi bi-search"></i>
+      </button>
+
+    </form>
+
+  </div>
+</nav>
+
+<style>
+  .nav-link-category {
+    text-decoration: none;
+    color: #999;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: color 0.2s ease;
+  }
+
+  .nav-link-category:hover {
+    color: #fff;
+  }
+
+  .active-cat {
+    color: #ff2b2b !important;
+    font-weight: 700 !important;
+  }
+</style>
