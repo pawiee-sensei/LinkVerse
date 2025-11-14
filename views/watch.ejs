@@ -16,11 +16,32 @@
     <div class="col-md-4">
       <h3 class="fw-bold text-light"><%= activeEpisodeTitle %></h3>
       <p class="text-secondary small mb-2"><strong>Category:</strong> <%= video.category %></p>
-      <p class="text-secondary small mb-2"><strong>Genre:</strong> <%= video.genre || "Unspecified" %></p
+      <p class="text-secondary small mb-2"><strong>Genre:</strong> <%= video.genre || "Unspecified" %></p>
       <p class="text-secondary small mb-2"><strong>Synopsis:</strong> <%= video.synopsis %></p>
       <p class="text-secondary small mb-1"><strong>Creator:</strong> <%= video.creator %></p>
       <p class="text-secondary small"><strong>Last Updated:</strong> <%= new Date(video.last_updated).toLocaleString() %></p>
       <p class="text-danger small mt-3">👁 <%= video.views %> views</p>
+
+      <!-- ⭐ WATCHLIST BUTTON (Only for Logged-in Users) -->
+      <% if (session.user) { %>
+
+        <% if (videosInWatchlist && videosInWatchlist.includes(video.id)) { %>
+          <form action="/watchlist/remove/<%= video.id %>" method="POST" class="mb-3">
+            <button class="btn btn-danger btn-sm w-100">
+              <i class="bi bi-bookmark-x"></i> Remove from Watchlist
+            </button>
+          </form>
+        <% } else { %>
+          <form action="/watchlist/add/<%= video.id %>" method="POST" class="mb-3">
+            <button class="btn btn-primary btn-sm w-100">
+              <i class="bi bi-bookmark-plus"></i> Add to Watchlist
+            </button>
+          </form>
+        <% } %>
+
+      <% } %>
+      <!-- ⭐ END WATCHLIST BUTTON -->
+
 
       <% if (episodes && episodes.length > 0) { %>
         <hr class="text-secondary">

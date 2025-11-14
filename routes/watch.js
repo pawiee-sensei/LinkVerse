@@ -27,7 +27,6 @@ router.get("/watch/:id", async (req, res) => {
     );
 
     // Build episodes array — include main video as episode 1
-    // main video will have id=null to differentiate it
     const episodes = [
       {
         id: null,
@@ -37,7 +36,6 @@ router.get("/watch/:id", async (req, res) => {
         episode_thumbnail: video.banner,
         isMain: true,
       },
-      // shift DB episodes to start at episode_number + 1 (so main = 1)
       ...episodesFromDB.map((ep) => ({
         ...ep,
         episode_number: (ep.episode_number || 0) + 1,
@@ -45,23 +43,20 @@ router.get("/watch/:id", async (req, res) => {
       })),
     ];
 
-    // Determine which episode is active
-    // default -> main (episodes[0])
+    // Determine active episode
     let activeEpisode = episodes[0];
     if (episodeId) {
-      // episodeId comes from query string and corresponds to video_episodes.id
       const found = episodes.find((e) => e.id && String(e.id) === String(episodeId));
       if (found) activeEpisode = found;
     }
 
-    // Use activeEpisode's file/thumbnail/title
     const activeVideoFile = activeEpisode.episode_file;
     const activeThumbnail = activeEpisode.episode_thumbnail || video.banner;
     const activeEpisodeTitle = activeEpisode.isMain
       ? video.title
       : `${video.title} — ${activeEpisode.episode_title || `Episode ${activeEpisode.episode_number}`}`;
 
-    // fetch reviews with usernames
+    // fetch reviews
     const [reviews] = await pool.query(
       `SELECT r.*, u.username
        FROM reviews r
@@ -87,7 +82,7 @@ router.get("/watch/:id", async (req, res) => {
       if (userReview) userRating = userReview.rating;
     }
 
-    // related videos (same category excluding this video)
+    // related videos
     const [related] = await pool.query(
       `SELECT id, title, banner, category, synopsis
        FROM videos
@@ -97,7 +92,18 @@ router.get("/watch/:id", async (req, res) => {
       [video.category, video.id]
     );
 
-    // Render page — IMPORTANT: include page (even empty) so header won't crash
+    // ⭐⭐⭐ WATCHLIST CHECK (ADDED)
+    let videosInWatchlist = [];
+    if (req.session.user) {
+      const [rows] = await pool.query(
+        "SELECT video_id FROM watchlist WHERE user_id = ?",
+        [req.session.user.id]
+      );
+      videosInWatchlist = rows.map((r) => r.video_id);
+    }
+    // ⭐⭐⭐ END WATCHLIST CHECK
+
+    // Render page
     res.render("watch", {
       title: activeEpisodeTitle,
       layout: false,
@@ -111,7 +117,8 @@ router.get("/watch/:id", async (req, res) => {
       session: req.session,
       userRating: userRating || 0,
       related,
-      page: "", // <<< prevents header 'page is not defined' errors
+      page: "",
+      videosInWatchlist, // ⭐ required by the watch.ejs button
     });
   } catch (err) {
     console.error("❌ Error loading watch page:", err);

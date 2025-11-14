@@ -26,7 +26,13 @@
           <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
 
         <% } else if (session.user) { %>
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+  <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+
+  <!-- ⭐ WATCHLIST BUTTON -->
+  <li class="nav-item">
+    <a class="nav-link" href="/watchlist">Watchlist</a>
+  </li>
+
 
           <!-- Profile Dropdown -->
           <li class="nav-item dropdown">
@@ -49,9 +55,10 @@
     </div>
   </div>
 </nav>
-<% if (page && ['home', 'anime', 'drama', 'movies'].includes(page)) { %>
+<% if (typeof page !== 'undefined' && ['home', 'anime', 'drama', 'movies'].includes(page)) { %>
   <%- include('user-navbar', { page }) %>
 <% } %>
+
 
 
 

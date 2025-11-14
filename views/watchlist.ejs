@@ -1,0 +1,63 @@
+<%- include('partials/header', { title: "Your Watchlist", session }) %>
+
+<div class="container py-5">
+
+  <h3 class="text-light mb-4">Your Watchlist</h3>
+
+  <% if (!videos || videos.length === 0) { %>
+    <p class="text-secondary">You have no saved videos.</p>
+  <% } %>
+
+  <div class="row g-4">
+
+    <% videos.forEach(v => { %>
+      <div class="col-6 col-md-4 col-lg-3">
+
+        <div class="video-card bg-dark border-0 rounded shadow-sm">
+
+          <!-- Thumbnail -->
+          <a href="/watch/<%= v.id %>">
+            <div class="position-relative">
+              <img 
+                src="/uploads/banners/<%= v.banner %>"
+                class="img-fluid rounded"
+                style="height: 160px; width: 100%; object-fit: cover;"
+                onerror="this.src='/images/default-banner.jpg';"
+              >
+            </div>
+          </a>
+
+          <!-- Title -->
+          <div class="p-2">
+            <a href="/watch/<%= v.id %>" class="text-decoration-none">
+              <h6 class="text-light fw-semibold mb-1" style="font-size: 0.9rem;">
+                <%= v.title.length > 35 ? v.title.slice(0,35)+'...' : v.title %>
+              </h6>
+            </a>
+
+            <!-- Fake uploader + views (you can replace with real data later) -->
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle bg-secondary me-2" style="width: 28px; height: 28px;"></div>
+              <small class="text-secondary">Saved • <%= v.views %> views</small>
+            </div>
+          </div>
+
+          <!-- Remove Button -->
+          <div class="px-2 pb-3">
+            <form action="/watchlist/remove/<%= v.id %>" method="POST">
+              <button class="btn btn-outline-danger btn-sm w-100">
+                Remove
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+      </div>
+    <% }) %>
+
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>
