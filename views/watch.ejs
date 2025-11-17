@@ -5,7 +5,13 @@
     <!-- MAIN VIDEO -->
     <div class="col-md-8">
       <div class="ratio ratio-16x9 mb-4">
-        <video controls preload="metadata" poster="/uploads/banners/<%= activeThumbnail %>" class="w-100 rounded shadow">
+        <video 
+          id="mainVideo"
+          controls 
+          preload="metadata" 
+          poster="/uploads/banners/<%= activeThumbnail %>" 
+          class="w-100 rounded shadow"
+        >
           <source src="/uploads/videos/<%= activeVideoFile %>" type="video/mp4">
           Your browser does not support the video tag.
         </video>
@@ -22,10 +28,9 @@
       <p class="text-secondary small"><strong>Last Updated:</strong> <%= new Date(video.last_updated).toLocaleString() %></p>
       <p class="text-danger small mt-3">👁 <%= video.views %> views</p>
 
-      <!-- ⭐ WATCHLIST BUTTON (Only for Logged-in Users) -->
+      <!-- ⭐ WATCHLIST BUTTON -->
       <% if (session.user) { %>
-
-        <% if (videosInWatchlist && videosInWatchlist.includes(video.id)) { %>
+        <% if (videosInWatchlist.includes(video.id)) { %>
           <form action="/watchlist/remove/<%= video.id %>" method="POST" class="mb-3">
             <button class="btn btn-danger btn-sm w-100">
               <i class="bi bi-bookmark-x"></i> Remove from Watchlist
@@ -38,12 +43,10 @@
             </button>
           </form>
         <% } %>
-
       <% } %>
       <!-- ⭐ END WATCHLIST BUTTON -->
 
-
-      <% if (episodes && episodes.length > 0) { %>
+      <% if (episodes.length > 0) { %>
         <hr class="text-secondary">
         <h5 class="text-light mb-3">
           <i class="bi bi-collection-play text-danger me-2"></i> Episodes
@@ -57,7 +60,9 @@
               <%= activeVideoFile.endsWith(ep.episode_file) ? 'active border-danger' : '' %>">
 
               <img 
-                src="<%= ep.isMain ? '/uploads/banners/' + ep.episode_thumbnail : '/uploads/episode_thumbnails/' + ep.episode_thumbnail %>" 
+                src="<%= ep.isMain 
+                      ? '/uploads/banners/' + ep.episode_thumbnail 
+                      : '/uploads/episode_thumbnails/' + ep.episode_thumbnail %>" 
                 class="rounded" width="70" height="45"
                 style="object-fit: cover;"
                 onerror="this.src='/images/default-banner.jpg';"
@@ -83,16 +88,14 @@
   <div class="reviews-section mt-4">
     <h5 class="text-light mb-3">⭐ Ratings & Reviews</h5>
 
-    <!-- Average Rating -->
     <div class="mb-4">
       <span class="fs-4 text-warning"><%= avgRating %>★</span>
       <span class="text-secondary small">average from <%= reviews.length %> review(s)</span>
     </div>
 
-    <!-- Review Form -->
     <% if (session.user) { %>
     <form action="/watch/<%= video.id %>/review" method="POST" class="bg-dark p-3 rounded shadow-sm mb-4">
-      <!-- Interactive Stars -->
+
       <div class="mb-3">
         <label class="text-secondary small mb-1 d-block">Your Rating</label>
         <div class="star-rating d-flex gap-1" id="starRating">
@@ -103,7 +106,6 @@
         <input type="hidden" name="rating" id="ratingValue" required>
       </div>
 
-      <!-- Comment -->
       <div class="mb-2">
         <label class="text-secondary small mb-1">Your Review</label>
         <textarea
@@ -111,8 +113,7 @@
           class="form-control bg-black text-light border-secondary"
           rows="3"
           maxlength="500"
-          placeholder="Write a short comment...">
-        </textarea>
+          placeholder="Write a short comment..."></textarea>
       </div>
 
       <button class="btn btn-danger btn-sm mt-2">Submit</button>
@@ -123,7 +124,6 @@
       </p>
     <% } %>
 
-    <!-- Existing Reviews -->
     <% if (reviews.length === 0) { %>
       <p class="text-muted">No reviews yet. Be the first!</p>
     <% } else { %>
@@ -155,7 +155,7 @@
                 <img 
                   src="/uploads/banners/<%= r.banner %>"
                   class="card-img-top rounded-top"
-                  alt="<%= r.title %> Thumbnail"
+                  alt="<%= r.title %>"
                   onerror="this.src='/images/default-banner.jpg';"
                 >
                 <div class="card-body">
@@ -174,34 +174,35 @@
   </div>
 </section>
 
-<!-- STAR RATING SCRIPT -->
+<!-- ⭐ SCRIPTS -->
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  const stars = document.querySelectorAll("#starRating .star");
-  const ratingInput = document.getElementById("ratingValue");
-  const existingRating = <%= userRating || 0 %>;
-  ratingInput.value = existingRating;
-  highlightStars(existingRating);
+document.addEventListener("DOMContentLoaded", () => {
+  const video = document.getElementById("mainVideo");
+  if (!video) return;
 
-  stars.forEach(star => {
-    star.addEventListener("mouseover", () => highlightStars(parseInt(star.dataset.value)));
-    star.addEventListener("mouseout", () => highlightStars(parseInt(ratingInput.value) || 0));
-    star.addEventListener("click", () => {
-      const val = parseInt(star.dataset.value);
-      ratingInput.value = val;
-      highlightStars(val);
-    });
-  });
+  // ⭐ AUTO-RESUME
+  const resumePos = <%= resumePosition || 0 %>;
+  if (resumePos > 5) video.currentTime = resumePos;
 
-  function highlightStars(count) {
-    stars.forEach((star, i) => {
-      if (i < count) {
-        star.classList.replace("bi-star", "bi-star-fill");
-      } else {
-        star.classList.replace("bi-star-fill", "bi-star");
-      }
-    });
-  }
+  // Identify episode
+  const videoId = "<%= video.id %>";
+  const episodeId = "<%= episodes.find(ep => activeVideoFile.endsWith(ep.episode_file))?.id || 0 %>";
+
+  // ⭐ AUTO SAVE PROGRESS EVERY 6 SECONDS
+  setInterval(() => {
+    if (video.currentTime > 5) {
+      fetch("/history/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoId,
+          episodeId,
+          position: Math.floor(video.currentTime),
+          duration: Math.floor(video.duration)
+        })
+      });
+    }
+  }, 6000);
 });
 </script>
 

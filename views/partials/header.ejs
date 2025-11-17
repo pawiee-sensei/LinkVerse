@@ -47,6 +47,8 @@
             </ul>
           </li>
 
+          
+
         <% } else { %>
           <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
           <li class="nav-item"><a class="nav-link" href="/register">Sign Up</a></li>
@@ -58,6 +60,7 @@
 <% if (typeof page !== 'undefined' && ['home', 'anime', 'drama', 'movies'].includes(page)) { %>
   <%- include('user-navbar', { page }) %>
 <% } %>
+
 
 
 

@@ -12,7 +12,9 @@ const router = express.Router();
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (file.fieldname === "banner") return cb(null, "uploads/banners");
+    if (file.fieldname === "thumbnail") return cb(null, "uploads/thumbnails");
     if (file.fieldname === "episode_thumbnail") return cb(null, "uploads/episode_thumbnails");
+    if (file.fieldname === "episode_file") return cb(null, "uploads/videos");
     return cb(null, "uploads/videos");
   },
   filename: (req, file, cb) => {
@@ -45,18 +47,18 @@ router.get("/admin/dashboard", ensureAdmin, async (req, res) => {
     res.status(500).send("Database Error");
   }
 });
-// ---------------------------
-// ADMIN UPLOADS LIST (WITH PAGINATION)
-// ---------------------------
+
+/* ---------------------------------------------
+   ADMIN UPLOADS LIST
+---------------------------------------------- */
 router.get("/admin/uploads", ensureAdmin, async (req, res) => {
   try {
     const search = req.query.search || "";
     const sort = req.query.sort || "created_at";
     const page = parseInt(req.query.page) || 1;
-    const limit = 8; // VIDEOS PER PAGE
+    const limit = 8;
     const offset = (page - 1) * limit;
 
-    // Count total videos
     const [[{ total }]] = await pool.query(
       `SELECT COUNT(*) AS total
        FROM videos
@@ -66,7 +68,6 @@ router.get("/admin/uploads", ensureAdmin, async (req, res) => {
       [`%${search}%`, `%${search}%`, `%${search}%`]
     );
 
-    // Fetch paginated videos
     const [videos] = await pool.query(
       `SELECT id, title, category, genre, views, banner, last_updated AS created_at
        FROM videos
@@ -78,8 +79,6 @@ router.get("/admin/uploads", ensureAdmin, async (req, res) => {
       [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
     );
 
-    const totalPages = Math.ceil(total / limit);
-
     res.render("admin/uploads", {
       title: "Manage Uploads — Admin",
       layout: "admin/layout",
@@ -88,7 +87,6 @@ router.get("/admin/uploads", ensureAdmin, async (req, res) => {
       search,
       sort,
       page,
-      totalPages,
     });
   } catch (err) {
     console.error("❌ Error fetching videos:", err);
@@ -96,9 +94,8 @@ router.get("/admin/uploads", ensureAdmin, async (req, res) => {
   }
 });
 
-
 /* ---------------------------------------------
-   ADMIN: UPLOAD FORM (GET)
+   UPLOAD FORM
 ---------------------------------------------- */
 router.get("/admin/upload", ensureAdmin, (req, res) => {
   res.render("admin/upload-form", {
@@ -109,22 +106,28 @@ router.get("/admin/upload", ensureAdmin, (req, res) => {
 });
 
 /* ---------------------------------------------
-   ADMIN: UPLOAD NEW VIDEO (POST)
+   UPLOAD NEW VIDEO
 ---------------------------------------------- */
 router.post(
   "/admin/upload",
   ensureAdmin,
-  upload.fields([{ name: "banner" }, { name: "video_file" }]),
+  upload.fields([
+    { name: "banner" },
+    { name: "thumbnail" },
+    { name: "video_file" }
+  ]),
   async (req, res) => {
     try {
       const { title, synopsis, category, genre, creator } = req.body;
+
       const banner = req.files["banner"] ? req.files["banner"][0].filename : null;
+      const thumbnail = req.files["thumbnail"] ? req.files["thumbnail"][0].filename : null;
       const video_file = req.files["video_file"] ? req.files["video_file"][0].filename : null;
 
       await pool.query(
-        `INSERT INTO videos (title, synopsis, category, genre, creator, banner, video_file, views, last_updated)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW())`,
-        [title, synopsis, category, genre, creator, banner, video_file]
+        `INSERT INTO videos (title, synopsis, category, genre, creator, banner, thumbnail, video_file, views, last_updated)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NOW())`,
+        [title, synopsis, category, genre, creator, banner, thumbnail, video_file]
       );
 
       res.redirect("/admin/uploads");
@@ -136,7 +139,7 @@ router.post(
 );
 
 /* ---------------------------------------------
-   ADMIN: EDIT VIDEO PAGE (GET)
+   EDIT VIDEO PAGE
 ---------------------------------------------- */
 router.get("/admin/edit/:id", ensureAdmin, async (req, res) => {
   const videoId = req.params.id;
@@ -164,29 +167,43 @@ router.get("/admin/edit/:id", ensureAdmin, async (req, res) => {
 });
 
 /* ---------------------------------------------
-   ADMIN: UPDATE VIDEO (POST)
+   UPDATE VIDEO
 ---------------------------------------------- */
 router.post(
   "/admin/edit/:id",
   ensureAdmin,
-  upload.single("banner"),
+  upload.fields([
+    { name: "banner" },
+    { name: "thumbnail" }
+  ]),
   async (req, res) => {
     const videoId = req.params.id;
     const { title, synopsis, category, genre } = req.body;
-    const banner = req.file ? req.file.filename : null;
+
+    const banner = req.files["banner"] ? req.files["banner"][0].filename : null;
+    const thumbnail = req.files["thumbnail"] ? req.files["thumbnail"][0].filename : null;
 
     try {
+      let query = `
+        UPDATE videos 
+        SET title=?, synopsis=?, category=?, genre=?, last_updated=NOW()
+      `;
+      const params = [title, synopsis, category, genre];
+
       if (banner) {
-        await pool.query(
-          "UPDATE videos SET title=?, synopsis=?, category=?, genre=?, banner=?, last_updated=NOW() WHERE id=?",
-          [title, synopsis, category, genre, banner, videoId]
-        );
-      } else {
-        await pool.query(
-          "UPDATE videos SET title=?, synopsis=?, category=?, genre=?, last_updated=NOW() WHERE id=?",
-          [title, synopsis, category, genre, videoId]
-        );
+        query += ", banner=?";
+        params.push(banner);
       }
+
+      if (thumbnail) {
+        query += ", thumbnail=?";
+        params.push(thumbnail);
+      }
+
+      query += " WHERE id=?";
+      params.push(videoId);
+
+      await pool.query(query, params);
 
       res.redirect("/admin/uploads");
     } catch (err) {
@@ -197,35 +214,14 @@ router.post(
 );
 
 /* ---------------------------------------------
-   ADMIN: ADD EPISODE (GET)
----------------------------------------------- */
-router.get("/admin/:id/add-episode", ensureAdmin, async (req, res) => {
-  const videoId = req.params.id;
-  try {
-    const [[video]] = await pool.query("SELECT * FROM videos WHERE id = ?", [videoId]);
-    if (!video) return res.status(404).send("Video not found");
-
-    res.render("admin/add-episode", {
-      title: `Add Episode — ${video.title}`,
-      layout: "admin/layout",
-      video,
-      admin: req.session.admin,
-    });
-  } catch (err) {
-    console.error("❌ Add Episode Page Error:", err);
-    res.status(500).send("Database Error");
-  }
-});
-
-/* ---------------------------------------------
-   ADMIN: ADD EPISODE (POST)
+   ADD EPISODE
 ---------------------------------------------- */
 router.post(
   "/admin/:id/add-episode",
   ensureAdmin,
   upload.fields([
     { name: "episode_file" },
-    { name: "episode_thumbnail" },
+    { name: "episode_thumbnail" }
   ]),
   async (req, res) => {
     const videoId = req.params.id;
@@ -252,7 +248,7 @@ router.post(
 );
 
 /* ---------------------------------------------
-   ADMIN: EDIT EPISODE (GET)
+   EDIT EPISODE PAGE
 ---------------------------------------------- */
 router.get("/admin/edit-episode/:id", ensureAdmin, async (req, res) => {
   const episodeId = req.params.id;
@@ -274,14 +270,14 @@ router.get("/admin/edit-episode/:id", ensureAdmin, async (req, res) => {
 });
 
 /* ---------------------------------------------
-   ADMIN: EDIT EPISODE (POST)
+   EDIT EPISODE
 ---------------------------------------------- */
 router.post(
   "/admin/edit-episode/:id",
   ensureAdmin,
   upload.fields([
     { name: "episode_file" },
-    { name: "episode_thumbnail" },
+    { name: "episode_thumbnail" }
   ]),
   async (req, res) => {
     const episodeId = req.params.id;
@@ -296,13 +292,17 @@ router.post(
       const [[ep]] = await pool.query("SELECT video_id FROM video_episodes WHERE id = ?", [episodeId]);
       if (!ep) return res.status(404).send("Episode not found");
 
-      let query = "UPDATE video_episodes SET episode_title=?, episode_number=?, last_updated=NOW()";
+      let query = `
+        UPDATE video_episodes 
+        SET episode_title=?, episode_number=?
+      `;
       const params = [episode_title, episode_number];
 
       if (episode_file) {
         query += ", episode_file=?";
         params.push(episode_file);
       }
+
       if (episode_thumbnail) {
         query += ", episode_thumbnail=?";
         params.push(episode_thumbnail);
@@ -312,6 +312,7 @@ router.post(
       params.push(episodeId);
 
       await pool.query(query, params);
+
       res.redirect(`/admin/edit/${ep.video_id}`);
     } catch (err) {
       console.error("❌ Update Episode Error:", err);
@@ -321,7 +322,7 @@ router.post(
 );
 
 /* ---------------------------------------------
-   ADMIN: DELETE EPISODE
+   DELETE EPISODE
 ---------------------------------------------- */
 router.post("/admin/delete-episode/:id", ensureAdmin, async (req, res) => {
   const episodeId = req.params.id;
@@ -339,18 +340,14 @@ router.post("/admin/delete-episode/:id", ensureAdmin, async (req, res) => {
   }
 });
 
-
-// ---------------------------
-// ADMIN: DELETE VIDEO
-// ---------------------------
+/* ---------------------------------------------
+   DELETE VIDEO
+---------------------------------------------- */
 router.post("/admin/delete/:id", ensureAdmin, async (req, res) => {
   const videoId = req.params.id;
 
   try {
-    // Delete all episodes first to avoid FK errors
     await pool.query("DELETE FROM video_episodes WHERE video_id = ?", [videoId]);
-
-    // Delete the video
     await pool.query("DELETE FROM videos WHERE id = ?", [videoId]);
 
     res.redirect("/admin/uploads");

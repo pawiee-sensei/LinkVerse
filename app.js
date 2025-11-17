@@ -12,6 +12,8 @@ import adminUploadsRoutes from "./routes/adminUploads.js";
 import homeRoutes from "./routes/home.js";
 import watchRoutes from "./routes/watch.js";
 import watchlistRoutes from "./routes/watchlist.js";
+import historyRoutes from "./routes/history.js";
+
 
 
 dotenv.config();
@@ -54,15 +56,13 @@ app.use((req, res, next) => {
 });
 
 // ----- Routes -----
-// ----- Routes -----
 app.use("/", homeRoutes);
 app.use("/", watchRoutes);
 app.use("/", authRoutes);
 app.use("/", adminRoutes);
 app.use("/", adminUploadsRoutes);
 app.use("/watchlist", watchlistRoutes);
-
-
+app.use("/history", historyRoutes);
 
 
 // ----- Health Check -----

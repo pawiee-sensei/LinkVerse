@@ -1,63 +1,294 @@
-<%- include('partials/header', { title: "Your Watchlist", session }) %>
+<%- include('partials/header', { title: "Your Dashboard", session }) %>
 
 <div class="container py-5">
 
-  <h3 class="text-light mb-4">Your Watchlist</h3>
+  <!-- 🌟 TRENDING -->
+  <h3 class="text-light mb-3">🔥 Trending</h3>
 
-  <% if (!videos || videos.length === 0) { %>
-    <p class="text-secondary">You have no saved videos.</p>
-  <% } %>
-
-  <div class="row g-4">
-
-    <% videos.forEach(v => { %>
+  <div class="row g-4 mb-5">
+    <% trending.forEach(t => { %>
       <div class="col-6 col-md-4 col-lg-3">
+        <a href="/watch/<%= t.id %>" class="text-decoration-none">
 
-        <div class="video-card bg-dark border-0 rounded shadow-sm">
+          <div class="card bg-dark border-0 rounded shadow-sm h-100">
+            <img 
+              src="/uploads/banners/<%= t.banner %>" 
+              class="card-img-top rounded-top"
+              style="height: 160px; object-fit: cover;"
+              onerror="this.src='/images/default-banner.jpg'"
+            >
 
-          <!-- Thumbnail -->
-          <a href="/watch/<%= v.id %>">
-            <div class="position-relative">
-              <img 
-                src="/uploads/banners/<%= v.banner %>"
-                class="img-fluid rounded"
-                style="height: 160px; width: 100%; object-fit: cover;"
-                onerror="this.src='/images/default-banner.jpg';"
-              >
-            </div>
-          </a>
-
-          <!-- Title -->
-          <div class="p-2">
-            <a href="/watch/<%= v.id %>" class="text-decoration-none">
-              <h6 class="text-light fw-semibold mb-1" style="font-size: 0.9rem;">
-                <%= v.title.length > 35 ? v.title.slice(0,35)+'...' : v.title %>
+            <div class="card-body">
+              <h6 class="text-light fw-semibold">
+                <%= t.title.length > 30 ? t.title.slice(0,30)+'...' : t.title %>
               </h6>
-            </a>
-
-            <!-- Fake uploader + views (you can replace with real data later) -->
-            <div class="d-flex align-items-center">
-              <div class="rounded-circle bg-secondary me-2" style="width: 28px; height: 28px;"></div>
-              <small class="text-secondary">Saved • <%= v.views %> views</small>
+              <small class="text-secondary">👁 <%= t.views %> views</small>
             </div>
           </div>
 
-          <!-- Remove Button -->
-          <div class="px-2 pb-3">
-            <form action="/watchlist/remove/<%= v.id %>" method="POST">
-              <button class="btn btn-outline-danger btn-sm w-100">
-                Remove
-              </button>
-            </form>
-          </div>
-
-        </div>
-
+        </a>
       </div>
     <% }) %>
-
   </div>
 
+  <!-- 🎬 CONTINUE WATCHING -->
+  <h3 class="text-light mb-3">⏳ Continue Watching</h3>
+
+  <% if (!historyCurrent || historyCurrent.length === 0) { %>
+    <p class="text-secondary mb-5">No recent activity.</p>
+  <% } else { %>
+
+    <div class="row g-4 mb-5">
+      <% historyCurrent.forEach(cw => { 
+           const thumbPath = cw.episode_id 
+             ? '/uploads/episode_thumbnails/' 
+             : '/uploads/thumbnails/';
+      %>
+
+        <div class="col-6 col-md-4 col-lg-3">
+          <a href="/watch/<%= cw.video_id %><%= cw.episode_id ? ('?episode=' + cw.episode_id) : '' %>"
+             class="text-decoration-none">
+
+            <div class="card bg-dark border-0 rounded shadow-sm h-100">
+
+              <!-- Thumbnail -->
+              <img 
+                src="<%= thumbPath + cw.thumb %>"
+                class="card-img-top rounded-top"
+                style="height: 150px; object-fit: cover;"
+                onerror="this.src='/images/default-banner.jpg';"
+              >
+
+              <div class="card-body">
+                <h6 class="text-light fw-semibold mb-1">
+                  <%= cw.title.length > 28 ? cw.title.slice(0,28)+'...' : cw.title %>
+                </h6>
+
+                <small class="text-secondary">
+                  Last watched 
+                  <%= Math.floor((new Date() - new Date(cw.last_watched)) / 60000) < 60 
+                        ? Math.floor((new Date() - new Date(cw.last_watched)) / 60000) + " minutes ago"
+                        : Math.floor((new Date() - new Date(cw.last_watched)) / 3600000) < 24
+                          ? Math.floor((new Date() - new Date(cw.last_watched)) / 3600000) + " hours ago"
+                          : Math.floor((new Date() - new Date(cw.last_watched)) / 86400000) + " days ago"
+                  %>
+                </small>
+
+              </div>
+            </div>
+
+          </a>
+        </div>
+
+      <% }); %>
+    </div>
+
+  <% } %>
+
+  <!-- ⭐ FOR YOU -->
+  <h3 class="text-light mb-3">
+    <i class="bi bi-stars text-warning me-2"></i> For You
+  </h3>
+
+  <% if (!forYou || forYou.length === 0) { %>
+    <p class="text-secondary mb-5">No recommendations available yet.</p>
+  <% } else { %>
+
+    <div class="scroll-row">
+      <% forYou.forEach(v => { %>
+
+        <a href="/watch/<%= v.id %>" class="text-decoration-none rec-card">
+
+          <div class="rec-thumb">
+            <img 
+              src="/uploads/banners/<%= v.banner %>" 
+              onerror="this.src='/images/default-banner.jpg'"
+            >
+            <div class="rec-overlay"></div>
+          </div>
+
+          <div class="rec-info">
+            <h6><%= v.title %></h6>
+            <p><%= v.genre %></p>
+          </div>
+
+        </a>
+
+      <% }); %>
+    </div>
+
+  <% } %>
+
+
+  <!-- 📌 USER WATCHLIST -->
+  <h3 class="text-light mb-3">📌 Your Watchlist</h3>
+
+  <% if (!watchlist || watchlist.length === 0) { %>
+    <p class="text-secondary">You have no saved videos.</p>
+  <% } else { %>
+
+    <div class="row g-4">
+
+      <% watchlist.forEach(v => { %>
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="video-card bg-dark rounded shadow-sm hover-scale overflow-hidden">
+
+            <a href="/watch/<%= v.id %>">
+              <img src="/uploads/thumbnails/<%= v.thumbnail %>" 
+                   class="img-fluid w-100"
+                   style="height:170px;object-fit:cover;"
+                   onerror="this.src='/uploads/banners/<%= v.banner %>'">
+            </a>
+
+            <div class="p-3">
+              <h6 class="text-light mb-1 text-truncate"><%= v.title %></h6>
+              <p class="text-secondary small mb-1">
+                <%= v.category %> • <%= v.genre %>
+              </p>
+
+              <p class="text-secondary small mb-2">
+                👁 <%= v.views %> views
+              </p>
+
+              <form action="/watchlist/remove/<%= v.id %>" method="POST">
+                <button class="btn btn-outline-danger btn-sm w-100">Remove</button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      <% }) %>
+
+    </div>
+
+  <% } %>
+
+
+  <!-- ========================================= -->
+  <!-- ⭐ WATCH HISTORY TABLE -->
+  <!-- ========================================= -->
+<hr class="text-secondary my-5">
+
+<h3 class="text-light fw-bold mb-4">⏳ Watch History</h3>
+
+<% if (historyFull.length === 0) { %>
+  <p class="text-secondary">You have no watch history.</p>
+<% } else { %>
+
+<div class="table-responsive">
+  <table class="table table-dark table-hover align-middle">
+
+    <thead class="table-secondary text-dark">
+      <tr>
+        <th style="width: 160px;">Thumbnail</th>
+        <th>Title / Episode</th>
+        <th style="width: 180px;">Progress</th>
+        <th style="width: 200px;">Last Watched</th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      <% historyFull.forEach(item => { 
+         const progress = item.duration 
+            ? Math.floor((item.position / item.duration) * 100) 
+            : 0;
+      %>
+
+      <tr onclick="window.location='/watch/<%= item.video_id %><%= item.episode_id ? ('?episode=' + item.episode_id) : '' %>'" style="cursor:pointer;">
+
+        <!-- Thumbnail -->
+        <td>
+          <img 
+            src="<%= item.episode_id 
+              ? '/uploads/episode_thumbnails/' + item.thumb 
+              : '/uploads/thumbnails/' + item.thumb %>"
+            class="rounded"
+            style="width:150px;height:85px;object-fit:cover;"
+            onerror="this.src='/images/default-banner.jpg';"
+          >
+        </td>
+
+        <!-- Title -->
+        <td>
+          <h6 class="text-light mb-1"><%= item.title %></h6>
+
+          <% if (item.episode_id) { %>
+            <p class="text-secondary small mb-1">
+              Episode <%= item.episode_number %> — <%= item.episode_title %>
+            </p>
+          <% } %>
+
+        </td>
+
+        <!-- Progress -->
+        <td>
+          <div class="progress" style="height:6px;">
+            <div class="progress-bar bg-danger" style="width:<%= progress %>%"></div>
+          </div>
+          <small class="text-secondary"><%= progress %>% watched</small>
+        </td>
+
+        <!-- Last Watched -->
+        <td class="text-secondary small">
+          <%= new Date(item.last_watched).toLocaleString() %>
+        </td>
+
+      </tr>
+
+      <% }) %>
+
+    </tbody>
+
+  </table>
 </div>
+
+<!-- PAGINATION -->
+<div class="d-flex justify-content-center mt-3">
+
+  <nav>
+    <ul class="pagination pagination-sm">
+
+      <!-- Prev -->
+      <li class="page-item <%= currentPage <= 1 ? 'disabled' : '' %>">
+        <a 
+          class="page-link bg-dark text-light border-secondary" 
+          href="?page=<%= currentPage - 1 %>"
+        >Previous</a>
+      </li>
+
+      <!-- Page numbers -->
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+          <a 
+            class="page-link bg-dark text-light border-secondary" 
+            href="?page=<%= i %>"
+          ><%= i %></a>
+        </li>
+      <% } %>
+
+      <!-- Next -->
+      <li class="page-item <%= currentPage >= totalPages ? 'disabled' : '' %>">
+        <a 
+          class="page-link bg-dark text-light border-secondary" 
+          href="?page=<%= currentPage + 1 %>"
+        >Next</a>
+      </li>
+
+    </ul>
+  </nav>
+
+</div>
+
+<% } %>
+
+</div>
+
+<style>
+.hover-scale:hover {
+  transform: scale(1.03);
+  transition: .25s;
+}
+</style>
 
 <%- include('partials/footer') %>

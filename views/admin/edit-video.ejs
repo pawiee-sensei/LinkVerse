@@ -82,6 +82,30 @@
         <% } %>
       </div>
 
+      <div class="mb-3">
+  <label class="form-label text-secondary">Update Thumbnail (optional)</label>
+  <input
+    type="file"
+    name="thumbnail"
+    accept="image/*"
+    class="form-control bg-dark text-light border-secondary"
+  />
+
+  <% if (video.thumbnail) { %>
+    <small class="text-secondary d-block mt-2">Current thumbnail:</small>
+    <img
+      src="/uploads/thumbnails/<%= video.thumbnail %>"
+      class="mt-1 rounded"
+      style="width:200px;height:110px;object-fit:cover;"
+    />
+  <% } %>
+</div>
+
+
+      
+
+        
+
       <div class="text-end mt-4">
         <button class="btn btn-danger px-5 py-2 fw-semibold">
           <i class="bi bi-save me-1"></i> Save Changes
