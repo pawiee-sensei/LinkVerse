@@ -44,7 +44,6 @@
           </form>
         <% } %>
       <% } %>
-      <!-- ⭐ END WATCHLIST BUTTON -->
 
       <% if (episodes.length > 0) { %>
         <hr class="text-secondary">
@@ -84,7 +83,7 @@
 
   <hr class="text-secondary my-4">
 
-  <!-- RATINGS & REVIEWS -->
+  <!-- ⭐ RATINGS & REVIEWS -->
   <div class="reviews-section mt-4">
     <h5 class="text-light mb-3">⭐ Ratings & Reviews</h5>
 
@@ -94,16 +93,19 @@
     </div>
 
     <% if (session.user) { %>
-    <form action="/watch/<%= video.id %>/review" method="POST" class="bg-dark p-3 rounded shadow-sm mb-4">
+    <form action="/watch/<%= video.id %>/review" method="POST" 
+          class="bg-dark p-3 rounded shadow-sm mb-4"
+          onsubmit="return validateRating();">
 
       <div class="mb-3">
         <label class="text-secondary small mb-1 d-block">Your Rating</label>
         <div class="star-rating d-flex gap-1" id="starRating">
-          <% for(let i = 1; i <= 5; i++) { %>
+          <% for (let i = 1; i <= 5; i++) { %>
             <i class="bi bi-star fs-3 text-warning star" data-value="<%= i %>"></i>
           <% } %>
         </div>
-        <input type="hidden" name="rating" id="ratingValue" required>
+
+        <input type="hidden" name="rating" id="ratingValue" value="<%= userRating || 0 %>">
       </div>
 
       <div class="mb-2">
@@ -118,10 +120,6 @@
 
       <button class="btn btn-danger btn-sm mt-2">Submit</button>
     </form>
-    <% } else { %>
-      <p class="text-secondary small">
-        You must <a href="/login" class="text-danger">log in</a> to leave a review.
-      </p>
     <% } %>
 
     <% if (reviews.length === 0) { %>
@@ -155,14 +153,13 @@
                 <img 
                   src="/uploads/banners/<%= r.banner %>"
                   class="card-img-top rounded-top"
-                  alt="<%= r.title %>"
                   onerror="this.src='/images/default-banner.jpg';"
                 >
                 <div class="card-body">
                   <h6 class="card-title fw-semibold"><%= r.title %></h6>
                   <p class="text-secondary small mb-1 text-uppercase"><%= r.category %></p>
                   <p class="card-text text-muted small">
-                    <%= (r.synopsis && r.synopsis.length > 70 ? r.synopsis.slice(0,70)+'...' : r.synopsis || '') %>
+                    <%= (r.synopsis?.length > 70 ? r.synopsis.slice(0,70)+'...' : r.synopsis || '') %>
                   </p>
                 </div>
               </div>
@@ -204,6 +201,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 6000);
 });
+
+/* ⭐ STAR RATING FIXED */
+document.addEventListener("DOMContentLoaded", function () {
+  const stars = document.querySelectorAll(".star");
+  const ratingInput = document.getElementById("ratingValue");
+
+  let selected = parseInt(ratingInput.value) || 0;
+  updateStars(selected);
+
+  stars.forEach(star => {
+    star.addEventListener("click", () => {
+      selected = parseInt(star.dataset.value);
+      ratingInput.value = selected;
+      updateStars(selected);
+    });
+
+    star.addEventListener("mouseover", () => updateStars(parseInt(star.dataset.value)));
+    star.addEventListener("mouseleave", () => updateStars(selected));
+  });
+
+  function updateStars(count) {
+    stars.forEach((star, i) => {
+      if (i < count) {
+        star.classList.add("bi-star-fill");
+        star.classList.remove("bi-star");
+      } else {
+        star.classList.add("bi-star");
+        star.classList.remove("bi-star-fill");
+      }
+    });
+  }
+});
+
+/* ⭐ PREVENT SUBMISSION WITHOUT RATING */
+function validateRating() {
+  const rating = document.getElementById("ratingValue").value;
+  if (!rating || parseInt(rating) <= 0) {
+    alert("Please select a star rating before submitting.");
+    return false;
+  }
+  return true;
+}
 </script>
 
 <%- include('partials/footer') %>

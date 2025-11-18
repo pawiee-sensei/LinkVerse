@@ -167,54 +167,30 @@ router.get("/admin/edit/:id", ensureAdmin, async (req, res) => {
 });
 
 /* ---------------------------------------------
-   UPDATE VIDEO
+   ⭐ FIXED: ADD EPISODE PAGE (GET)
 ---------------------------------------------- */
-router.post(
-  "/admin/edit/:id",
-  ensureAdmin,
-  upload.fields([
-    { name: "banner" },
-    { name: "thumbnail" }
-  ]),
-  async (req, res) => {
-    const videoId = req.params.id;
-    const { title, synopsis, category, genre } = req.body;
+router.get("/admin/:id/add-episode", ensureAdmin, async (req, res) => {
+  const videoId = req.params.id;
 
-    const banner = req.files["banner"] ? req.files["banner"][0].filename : null;
-    const thumbnail = req.files["thumbnail"] ? req.files["thumbnail"][0].filename : null;
+  try {
+    const [[video]] = await pool.query("SELECT * FROM videos WHERE id = ?", [videoId]);
+    if (!video) return res.status(404).send("Video not found");
 
-    try {
-      let query = `
-        UPDATE videos 
-        SET title=?, synopsis=?, category=?, genre=?, last_updated=NOW()
-      `;
-      const params = [title, synopsis, category, genre];
+    res.render("admin/add-episode", {
+      title: "Add Episode",
+      layout: "admin/layout",
+      video,
+      admin: req.session.admin
+    });
 
-      if (banner) {
-        query += ", banner=?";
-        params.push(banner);
-      }
-
-      if (thumbnail) {
-        query += ", thumbnail=?";
-        params.push(thumbnail);
-      }
-
-      query += " WHERE id=?";
-      params.push(videoId);
-
-      await pool.query(query, params);
-
-      res.redirect("/admin/uploads");
-    } catch (err) {
-      console.error("❌ Update Video Error:", err);
-      res.status(500).send("Database Error");
-    }
+  } catch (err) {
+    console.error("❌ Add Episode Page Error:", err);
+    res.status(500).send("Database Error");
   }
-);
+});
 
 /* ---------------------------------------------
-   ADD EPISODE
+   ADD EPISODE (POST)
 ---------------------------------------------- */
 router.post(
   "/admin/:id/add-episode",

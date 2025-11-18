@@ -13,27 +13,16 @@ router.get("/watch/:id", async (req, res) => {
   const user = req.session.user;
 
   try {
-    // Fetch main video
-    const [[video]] = await pool.query(
-      "SELECT * FROM videos WHERE id = ?",
-      [videoId]
-    );
-
+    const [[video]] = await pool.query("SELECT * FROM videos WHERE id = ?", [videoId]);
     if (!video) return res.status(404).send("Video not found");
 
-    // Increment views
-    await pool.query(
-      "UPDATE videos SET views = views + 1 WHERE id = ?",
-      [videoId]
-    );
+    await pool.query("UPDATE videos SET views = views + 1 WHERE id = ?", [videoId]);
 
-    // Fetch uploaded episodes
     const [episodesFromDB] = await pool.query(
       "SELECT * FROM video_episodes WHERE video_id = ? ORDER BY episode_number ASC",
       [videoId]
     );
 
-    // Build episodes list (Main episode as #1)
     const episodes = [
       {
         id: null,
@@ -50,49 +39,36 @@ router.get("/watch/:id", async (req, res) => {
       })),
     ];
 
-    // Determine active episode
     let activeEpisode = episodes[0];
 
     if (episodeId) {
-      const found = episodes.find(
-        (e) => e.id && String(e.id) === String(episodeId)
-      );
+      const found = episodes.find((e) => e.id && String(e.id) === String(episodeId));
       if (found) activeEpisode = found;
     }
 
     const activeVideoFile = activeEpisode.episode_file;
-    const activeThumbnail =
-      activeEpisode.episode_thumbnail || video.banner;
+    const activeThumbnail = activeEpisode.episode_thumbnail || video.banner;
 
     const activeEpisodeTitle = activeEpisode.isMain
       ? video.title
-      : `${video.title} — ${
-          activeEpisode.episode_title ||
-          `Episode ${activeEpisode.episode_number}`
-        }`;
+      : `${video.title} — ${activeEpisode.episode_title || `Episode ${activeEpisode.episode_number}`}`;
 
-    /* ---------------------------------------------
-   AUTO RESUME — get last watch position (most recent)
----------------------------------------------- */
-let resumePosition = 0;
+    /* ⭐ AUTO RESUME */
+    let resumePosition = 0;
 
-if (user) {
-  const [[h]] = await pool.query(
-    `SELECT position
-     FROM history
-     WHERE user_id = ? AND video_id = ?
-     ORDER BY last_watched DESC
-     LIMIT 1`,
-    [user.id, videoId]
-  );
+    if (user) {
+      const [[h]] = await pool.query(
+        `SELECT position FROM history
+         WHERE user_id = ? AND video_id = ?
+         ORDER BY last_watched DESC
+         LIMIT 1`,
+        [user.id, videoId]
+      );
 
-  if (h && typeof h.position !== "undefined") resumePosition = h.position;
-}
+      if (h && typeof h.position !== "undefined") resumePosition = h.position;
+    }
 
-
-    /* ---------------------------------------------
-       REVIEWS
-    ---------------------------------------------- */
+    /* ⭐ REVIEWS */
     const [reviews] = await pool.query(
       `SELECT r.*, u.username
        FROM reviews r
@@ -103,11 +79,11 @@ if (user) {
     );
 
     const [[{ avgRating }]] = await pool.query(
-      "SELECT ROUND(AVG(rating), 1) AS avgRating FROM reviews WHERE video_id = ?",
+      "SELECT ROUND(AVG(rating),1) AS avgRating FROM reviews WHERE video_id = ?",
       [videoId]
     );
 
-    let userRating = null;
+    let userRating = 0;
     if (user) {
       const [[userReview]] = await pool.query(
         "SELECT rating FROM reviews WHERE user_id = ? AND video_id = ?",
@@ -116,9 +92,7 @@ if (user) {
       if (userReview) userRating = userReview.rating;
     }
 
-    /* ---------------------------------------------
-       RELATED VIDEOS
-    ---------------------------------------------- */
+    /* ⭐ RELATED VIDEOS */
     const [related] = await pool.query(
       `SELECT id, title, banner, category, synopsis
        FROM videos
@@ -128,22 +102,16 @@ if (user) {
       [video.category, video.id]
     );
 
-    /* ---------------------------------------------
-       WATCHLIST CHECK
-    ---------------------------------------------- */
+    /* ⭐ WATCHLIST CHECK */
     let videosInWatchlist = [];
-
-    if (req.session.user) {
+    if (user) {
       const [rows] = await pool.query(
         "SELECT video_id FROM watchlist WHERE user_id = ?",
-        [req.session.user.id]
+        [user.id]
       );
       videosInWatchlist = rows.map((r) => r.video_id);
     }
 
-    /* ---------------------------------------------
-       RENDER PAGE
-    ---------------------------------------------- */
     res.render("watch", {
       title: activeEpisodeTitle,
       layout: false,
@@ -155,11 +123,10 @@ if (user) {
       reviews,
       avgRating: avgRating || 0,
       session: req.session,
-      userRating: userRating || 0,
+      userRating,
       related,
-      page: "",
       videosInWatchlist,
-      resumePosition, // ⭐ auto-resume feature
+      resumePosition,
     });
   } catch (err) {
     console.error("❌ Error loading watch page:", err);
@@ -168,7 +135,7 @@ if (user) {
 });
 
 /* ---------------------------------------------
-   SUBMIT / UPDATE REVIEW (POST)
+   SUBMIT REVIEW
 ---------------------------------------------- */
 router.post("/watch/:id/review", async (req, res) => {
   const videoId = req.params.id;
@@ -178,15 +145,15 @@ router.post("/watch/:id/review", async (req, res) => {
   if (!user) return res.redirect("/login");
 
   try {
-    const [[existing]] = await pool.query(
+    const [[exists]] = await pool.query(
       "SELECT id FROM reviews WHERE user_id = ? AND video_id = ?",
       [user.id, videoId]
     );
 
-    if (existing) {
+    if (exists) {
       await pool.query(
         "UPDATE reviews SET rating = ?, comment = ?, updated_at = NOW() WHERE id = ?",
-        [rating, comment, existing.id]
+        [rating, comment, exists.id]
       );
     } else {
       await pool.query(
@@ -203,7 +170,7 @@ router.post("/watch/:id/review", async (req, res) => {
 });
 
 /* ---------------------------------------------
-   SAVE WATCH PROGRESS (POST)
+   SAVE WATCH PROGRESS
 ---------------------------------------------- */
 router.post("/history/update", async (req, res) => {
   if (!req.session.user) return res.sendStatus(401);
