@@ -13,7 +13,7 @@
       type="text" 
       name="search" 
       class="form-control me-2" 
-      placeholder="Search title..." 
+      placeholder="Search title, category, genre..." 
       value="<%= search %>"
     >
 
@@ -30,9 +30,7 @@
   <div class="row g-4">
 
     <% if (videos.length === 0) { %>
-
       <p class="text-center text-secondary">No videos found.</p>
-
     <% } else { %>
 
       <% videos.forEach(video => { %>
@@ -43,7 +41,7 @@
           <div class="card bg-dark text-light border-0 shadow-sm rounded-3 overflow-hidden"
                style="height: 540px;">
 
-            <!-- BANNER = 70% OF CARD (≈378px) -->
+            <!-- BANNER = 70% OF CARD -->
             <div style="height: 378px; width: 100%; overflow: hidden;">
               <img 
                 src="/uploads/banners/<%= video.banner %>"
@@ -53,10 +51,11 @@
               >
             </div>
 
-            <!-- INFO (30%) -->
+            <!-- INFO -->
             <div class="card-body py-3">
               <h6 class="card-title mb-1 text-truncate"><%= video.title %></h6>
-              <p class="small text-muted mb-1"><%= video.category %></p>
+              <p class="small text-muted mb-1">📁 <%= video.category %></p>
+              <p class="small text-muted mb-1">🎭 <%= video.genre %></p>
               <p class="small text-secondary mb-1">👁 <%= video.views %> views</p>
               <p class="small text-secondary">🕒 <%= new Date(video.created_at).toLocaleString() %></p>
             </div>
@@ -92,6 +91,35 @@
     <% } %>
 
   </div>
+
+  <!-- PAGINATION -->
+  <% if (totalPages > 1) { %>
+    <div class="d-flex justify-content-center mt-4">
+      <nav>
+        <ul class="pagination">
+
+          <!-- Prev -->
+          <li class="page-item <%= page === 1 ? 'disabled' : '' %>">
+            <a class="page-link" href="?page=<%= page - 1 %>&search=<%= search %>&sort=<%= sort %>">Previous</a>
+          </li>
+
+          <!-- Page Numbers -->
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= page === i ? 'active' : '' %>">
+              <a class="page-link" href="?page=<%= i %>&search=<%= search %>&sort=<%= sort %>"><%= i %></a>
+            </li>
+          <% } %>
+
+          <!-- Next -->
+          <li class="page-item <%= page === totalPages ? 'disabled' : '' %>">
+            <a class="page-link" href="?page=<%= page + 1 %>&search=<%= search %>&sort=<%= sort %>">Next</a>
+          </li>
+
+        </ul>
+      </nav>
+    </div>
+  <% } %>
+
 </div>
 
 <style>
